@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+:root {
+	--color-primary: #2563eb;
+	--color-primary-dark: #1d4ed8;
+	--color-success: #16a34a;
+	--color-danger: #dc2626;
+	--color-warning: #d97706;
+	--color-bg: #f8fafc;
+	--color-surface: #ffffff;
+	--color-text: #0f172a;
+	--color-text-muted: #64748b;
+	--color-border: #e2e8f0;
+}
+
+html, body {
+	height: 100%;
+	margin: 0;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	font-family: system-ui, -apple-system, sans-serif;
+}
+
+.stimulus-area {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 100vh;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.fixation-cross {
+	font-size: 48px;
+	font-weight: 300;
+	color: #94a3b8;
+	font-family: monospace;
+}
