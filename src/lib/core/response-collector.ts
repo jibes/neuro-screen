@@ -18,6 +18,23 @@ export interface WaitOptions {
 	signal?: AbortSignal;
 }
 
+/** Event used by on-screen (touch) response buttons to emulate a key press */
+export const VIRTUAL_RESPONSE_EVENT = 'ns-response';
+
+interface VirtualResponseDetail {
+	key: string;
+	/** event.timeStamp of the originating pointerdown (same clock as performance.now()) */
+	timeStamp: number;
+}
+
+/**
+ * Emit a response from an on-screen button. Use the pointerdown event's timeStamp so touch
+ * reaction times are measured like keyboard ones (click fires later, on release).
+ */
+export function dispatchVirtualResponse(key: string, timeStamp: number, target: EventTarget = document): void {
+	target.dispatchEvent(new CustomEvent<VirtualResponseDetail>(VIRTUAL_RESPONSE_EVENT, { detail: { key, timeStamp } }));
+}
+
 /** Single characters are matched case-insensitively (Caps Lock / Shift safe). */
 function normalizeKey(key: string): string {
 	return key.length === 1 ? key.toLowerCase() : key;
@@ -42,6 +59,13 @@ export class ResponseCollector {
 		return validKeys.some((k) => normalizeKey(k) === key);
 	}
 
+	private virtualMatches(detail: VirtualResponseDetail, validKeys?: string[]): boolean {
+		if (this.timer.paused) return false;
+		if (!validKeys) return true;
+		const key = normalizeKey(detail.key);
+		return validKeys.some((k) => normalizeKey(k) === key);
+	}
+
 	/**
 	 * Wait for a single response matching the criteria.
 	 * Returns null if the timeout is reached or the signal aborts without a response.
@@ -56,6 +80,7 @@ export class ResponseCollector {
 			const cleanup = () => {
 				timeoutCtrl.abort();
 				target.removeEventListener('keydown', onKey as EventListener);
+				target.removeEventListener(VIRTUAL_RESPONSE_EVENT, onVirtual);
 				if (allowMouse) target.removeEventListener('mousedown', onMouse as EventListener);
 				if (allowTouch) target.removeEventListener('touchstart', onTouch as EventListener);
 				signal?.removeEventListener('abort', onAbort);
@@ -81,6 +106,16 @@ export class ResponseCollector {
 				});
 			};
 
+			const onVirtual = (e: Event) => {
+				const detail = (e as CustomEvent<VirtualResponseDetail>).detail;
+				if (!this.virtualMatches(detail, validKeys)) return;
+				finish({
+					type: 'touchstart',
+					key: normalizeKey(detail.key),
+					timestamp: this.timer.fromEventTimestamp(detail.timeStamp)
+				});
+			};
+
 			const onMouse = (e: MouseEvent) => {
 				if (this.timer.paused) return;
 				finish({
@@ -103,6 +138,7 @@ export class ResponseCollector {
 			if (signal?.aborted) return finish(null);
 
 			target.addEventListener('keydown', onKey as EventListener);
+			target.addEventListener(VIRTUAL_RESPONSE_EVENT, onVirtual);
 			if (allowMouse) target.addEventListener('mousedown', onMouse as EventListener);
 			if (allowTouch) target.addEventListener('touchstart', onTouch as EventListener);
 			signal?.addEventListener('abort', onAbort, { once: true });
@@ -137,6 +173,16 @@ export class ResponseCollector {
 			});
 		};
 
+		const onVirtual = (e: Event) => {
+			const detail = (e as CustomEvent<VirtualResponseDetail>).detail;
+			if (!this.virtualMatches(detail, validKeys)) return;
+			callback({
+				type: 'touchstart',
+				key: normalizeKey(detail.key),
+				timestamp: this.timer.fromEventTimestamp(detail.timeStamp)
+			});
+		};
+
 		const onMouse = (e: MouseEvent) => {
 			if (this.timer.paused) return;
 			callback({
@@ -157,11 +203,13 @@ export class ResponseCollector {
 		};
 
 		target.addEventListener('keydown', onKey as EventListener);
+		target.addEventListener(VIRTUAL_RESPONSE_EVENT, onVirtual);
 		if (allowMouse) target.addEventListener('mousedown', onMouse as EventListener);
 		if (allowTouch) target.addEventListener('touchstart', onTouch as EventListener);
 
 		const stop = () => {
 			target.removeEventListener('keydown', onKey as EventListener);
+			target.removeEventListener(VIRTUAL_RESPONSE_EVENT, onVirtual);
 			if (allowMouse) target.removeEventListener('mousedown', onMouse as EventListener);
 			if (allowTouch) target.removeEventListener('touchstart', onTouch as EventListener);
 			this.cleanupFns.delete(stop);

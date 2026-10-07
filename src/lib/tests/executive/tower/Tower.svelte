@@ -189,7 +189,7 @@
 				<!-- Goal state -->
 				<div class="mb-6">
 					<p class="text-sm text-slate-400 mb-2">Zielzustand (Problem {currentProblemIndex + 1}/{config.problems.length}):</p>
-					<div class="flex gap-8 justify-center">
+					<div class="flex gap-3 sm:gap-8 justify-center">
 						{#each currentProblem.goal.pegs as peg, pegIdx}
 							<div class="flex flex-col items-center">
 								<div class="flex flex-col-reverse items-center gap-1 h-20 justify-start">
@@ -209,10 +209,10 @@
 				<!-- Current state -->
 				<div class="mb-4">
 					<p class="text-sm text-slate-400 mb-2">Aktuell (Zug {moves}/{currentProblem.maxMoves}):</p>
-					<div class="flex gap-8 justify-center">
+					<div class="flex gap-3 sm:gap-8 justify-center">
 						{#each currentState.pegs as peg, pegIdx}
 							<button
-								class="flex flex-col items-center cursor-pointer group"
+								class="flex flex-col items-center cursor-pointer group px-1 py-2 rounded-lg touch-manipulation"
 								onclick={() => handlePegClick(pegIdx)}
 							>
 								<div class="flex flex-col-reverse items-center gap-1 h-28 justify-start">
@@ -238,9 +238,9 @@
 				{/if}
 
 				{#if selectedPeg !== null}
-					<p class="text-sm text-blue-500 mt-2">Klicken Sie auf den Zielstab</p>
+					<p class="text-sm text-blue-500 mt-2 px-4 text-center">Klicken bzw. tippen Sie auf den Zielstab</p>
 				{:else}
-					<p class="text-sm text-slate-400 mt-2">Klicken Sie auf einen Stab, um die oberste Scheibe auszuwaehlen</p>
+					<p class="text-sm text-slate-400 mt-2 px-4 text-center">Klicken bzw. tippen Sie auf einen Stab, um die oberste Scheibe auszuwaehlen</p>
 				{/if}
 			</div>
 		{:else if phase === 'completed' && summary}

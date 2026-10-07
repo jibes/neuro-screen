@@ -94,20 +94,20 @@
 	}
 </script>
 
-<div class="max-w-3xl mx-auto px-6 py-10">
-	<div class="flex items-center justify-between mb-8">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+	<div class="flex flex-wrap items-center justify-between gap-3 mb-8">
 		<h1 class="text-2xl font-bold text-slate-900">{i.results.title}</h1>
 		{#if testRuns.length > 0}
-			<div class="flex gap-2">
+			<div class="flex flex-wrap gap-2">
 				<button
 					onclick={handleExportJSON}
-					class="px-4 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+					class="px-4 py-2 text-sm whitespace-nowrap text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
 				>
 					{i.common.exportJSON}
 				</button>
 				<button
 					onclick={handleClearAll}
-					class="px-4 py-2 text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+					class="px-4 py-2 text-sm whitespace-nowrap text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
 				>
 					{i.common.deleteAll}
 				</button>
@@ -138,9 +138,9 @@
 			{#each testRuns as run}
 				<a
 					href="{base}/ergebnisse/{run.id}"
-					class="block bg-white rounded-lg border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+					class="block bg-white rounded-lg border border-slate-200 p-4 sm:p-5 hover:border-blue-300 hover:shadow-sm transition-all"
 				>
-					<div class="flex items-center justify-between mb-1">
+					<div class="flex flex-wrap items-center justify-between gap-x-3 mb-1">
 						<h3 class="font-medium text-slate-900">
 							{getTestName(run.testId)}
 						</h3>

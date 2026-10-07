@@ -12,10 +12,10 @@
 	const isLast = $derived(currentPage === instructions.length - 1);
 </script>
 
-<div class="flex flex-col items-center justify-center min-h-[60vh] px-8">
+<div class="flex flex-col items-center justify-center min-h-[60vh] px-4 sm:px-8">
 	<div class="max-w-xl w-full">
-		<div class="bg-white rounded-lg shadow-sm border border-slate-200 p-8 mb-6">
-			<p class="text-lg text-slate-700 leading-relaxed">
+		<div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5 sm:p-8 mb-6">
+			<p class="text-base sm:text-lg text-slate-700 leading-relaxed">
 				{instructions[currentPage]}
 			</p>
 		</div>
@@ -28,7 +28,7 @@
 				{#if currentPage > 0}
 					<button
 						onclick={() => currentPage--}
-						class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+						class="px-4 py-3 sm:py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
 					>
 						{i.common.back}
 					</button>
@@ -36,14 +36,14 @@
 				{#if isLast}
 					<button
 						onclick={onComplete}
-						class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+						class="px-6 py-3 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
 					>
 						{i.common.start}
 					</button>
 				{:else}
 					<button
 						onclick={() => currentPage++}
-						class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+						class="px-6 py-3 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
 					>
 						{i.common.next}
 					</button>

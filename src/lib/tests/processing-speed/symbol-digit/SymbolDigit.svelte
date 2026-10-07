@@ -5,6 +5,8 @@
 	import { t } from '$lib/i18n/index.js';
 	import TestShell from '$lib/components/TestShell.svelte';
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
+	import NumericKeypad from '$lib/components/NumericKeypad.svelte';
+	import { isTouchDevice } from '$lib/core/device.js';
 	import { HighResTimer } from '$lib/core/timing.js';
 	import { SYMBOL_DIGIT_CONFIG } from './config.js';
 	import { generateTrialPool, computeSummary } from './logic.js';
@@ -14,6 +16,7 @@
 	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
+	const touch = isTouchDevice();
 	const config = SYMBOL_DIGIT_CONFIG;
 	const nextTest = getNextTest(config.testId);
 
@@ -39,31 +42,37 @@
 	const currentSymbol = $derived(config.symbols[trials[currentTrialIndex].symbolIndex]);
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (!running || e.repeat || timer.paused) return;
+		if (e.repeat) return;
 		if (e.key >= '1' && e.key <= '9') {
 			e.preventDefault();
-			if (timer.now() >= config.timeLimitMs) {
-				finishTest();
-				return;
-			}
-			const digit = Number(e.key);
-			const trial = trials[currentTrialIndex];
-			const rt = timer.now() - trialStartTime;
-			const correct = digit === trial.correctDigit;
-
-			results.push({ trial, userResponse: digit, correct, rt });
-			answeredCount = results.length;
-
-			// Flash feedback
-			flashColor = correct ? 'green' : 'red';
-			setTimeout(() => { flashColor = null; }, 150);
-
-			if (currentTrialIndex + 2 >= trials.length) {
-				trials.push(...generateTrialPool(config.trialPoolSize, trials));
-			}
-			currentTrialIndex++;
-			trialStartTime = timer.now();
+			respond(Number(e.key), e.timeStamp);
 		}
+	}
+
+	/** Record a response; `eventTimeStamp` is the key/pointer event's timeStamp */
+	function respond(digit: number, eventTimeStamp: number) {
+		if (!running || timer.paused) return;
+		if (timer.now() >= config.timeLimitMs) {
+			finishTest();
+			return;
+		}
+		const trial = trials[currentTrialIndex];
+		const responseTime = Math.min(timer.fromEventTimestamp(eventTimeStamp), timer.now());
+		const rt = responseTime - trialStartTime;
+		const correct = digit === trial.correctDigit;
+
+		results.push({ trial, userResponse: digit, correct, rt });
+		answeredCount = results.length;
+
+		// Flash feedback
+		flashColor = correct ? 'green' : 'red';
+		setTimeout(() => { flashColor = null; }, 150);
+
+		if (currentTrialIndex + 2 >= trials.length) {
+			trials.push(...generateTrialPool(config.trialPoolSize, trials));
+		}
+		currentTrialIndex++;
+		trialStartTime = responseTime;
 	}
 
 	function startTimer() {
@@ -151,6 +160,7 @@
 	bind:this={testShell}
 	testName={config.testName}
 	instructions={[...config.instructions]}
+	touchHint={i.touch.keypad}
 	currentTrial={currentTrialIndex}
 	totalTrials={0}
 	onStart={() => runTest()}
@@ -160,11 +170,11 @@
 		{#if phase === 'running'}
 			<div class="stimulus-area">
 				<!-- Legend bar -->
-				<div class="w-full max-w-2xl mb-10">
-					<div class="flex justify-between bg-white rounded-lg border border-slate-200 p-3">
+				<div class="w-full max-w-2xl mb-6 sm:mb-10 px-2 sm:px-0">
+					<div class="flex justify-between bg-white rounded-lg border border-slate-200 p-2 sm:p-3">
 						{#each config.symbols as symbol, idx}
 							<div class="flex flex-col items-center gap-1">
-								<span class="text-2xl select-none">{symbol}</span>
+								<span class="text-xl sm:text-2xl select-none">{symbol}</span>
 								<span class="text-sm font-medium text-slate-600">{idx + 1}</span>
 							</div>
 						{/each}
@@ -173,14 +183,14 @@
 
 				<!-- Current symbol -->
 				<div
-					class="text-9xl select-none transition-colors duration-100
+					class="text-7xl sm:text-9xl select-none transition-colors duration-100
 						{flashColor === 'green' ? 'text-green-500' : flashColor === 'red' ? 'text-red-500' : 'text-slate-900'}"
 				>
 					{currentSymbol}
 				</div>
 
 				<!-- Timer -->
-				<div class="mt-8 text-lg tabular-nums {remainingSeconds <= 10 ? 'text-red-500 font-medium' : 'text-slate-400'}">
+				<div class="mt-4 sm:mt-8 text-lg tabular-nums {remainingSeconds <= 10 ? 'text-red-500 font-medium' : 'text-slate-400'}">
 					{remainingSeconds}s
 				</div>
 
@@ -188,6 +198,12 @@
 				<div class="mt-2 text-sm text-slate-400">
 					{answeredCount} beantwortet
 				</div>
+
+				{#if touch}
+					<div class="mt-4 w-full px-4">
+						<NumericKeypad onDigit={respond} />
+					</div>
+				{/if}
 			</div>
 		{:else if phase === 'completed' && summary}
 			<ResultsCard

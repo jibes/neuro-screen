@@ -8,10 +8,10 @@
 	const categories = TEST_CATEGORIES;
 </script>
 
-<div class="max-w-5xl mx-auto px-6 py-10">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 	<div class="text-center mb-10">
-		<h1 class="text-3xl font-bold text-slate-900 mb-2">{i.app.title}</h1>
-		<p class="text-lg text-slate-500">{i.app.subtitle}</p>
+		<h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">{i.app.title}</h1>
+		<p class="text-base sm:text-lg text-slate-500">{i.app.subtitle}</p>
 	</div>
 
 	<div class="mb-8">

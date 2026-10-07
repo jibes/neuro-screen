@@ -42,6 +42,16 @@ export const de = {
 		practice: 'Uebung',
 		test: 'Test'
 	},
+	touch: {
+		singleButton:
+			'Auf Touch-Geraeten: Tippen Sie statt der Leertaste auf die grosse Schaltflaeche am unteren Bildschirmrand.',
+		arrows:
+			'Auf Touch-Geraeten: Tippen Sie statt der Pfeiltasten auf die Schaltflaechen links/rechts am unteren Bildschirmrand.',
+		colors:
+			'Auf Touch-Geraeten: Tippen Sie statt der Tasten D/F/J/K auf die Farbschaltflaechen am unteren Bildschirmrand.',
+		keypad: 'Auf Touch-Geraeten: Verwenden Sie das Ziffernfeld auf dem Bildschirm.',
+		tap: 'Tippen'
+	},
 	categories: {
 		attention: 'Aufmerksamkeit & Inhibition',
 		workingMemory: 'Arbeitsgedaechtnis',

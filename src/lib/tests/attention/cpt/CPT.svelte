@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/i18n/index.js';
 	import TestShell from '$lib/components/TestShell.svelte';
+	import TouchResponsePad from '$lib/components/TouchResponsePad.svelte';
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
 	import { createTrialRunner } from '$lib/core/trial-runner.svelte.js';
 	import { CPT_CONFIG } from './config.js';
@@ -103,6 +104,7 @@
 	bind:this={testShell}
 	testName={config.testName}
 	instructions={[...config.instructions]}
+	touchHint={i.touch.singleButton}
 	currentTrial={runner.currentTrial}
 	totalTrials={runner.totalTrials}
 	onStart={handleStart}
@@ -114,6 +116,7 @@
 				<p class="text-xl text-slate-600">{i.common.practiceComplete}</p>
 			</div>
 		{:else if phase === 'running'}
+			<TouchResponsePad buttons={[{ key: ' ', label: i.touch.tap, class: 'max-w-md' }]} />
 			{#if stage === 'practice'}
 				<div class="fixed top-4 left-4 text-sm font-medium text-amber-600">{i.common.practice}</div>
 			{/if}

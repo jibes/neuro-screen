@@ -13,6 +13,14 @@
 	--color-border: #e2e8f0;
 }
 
+html {
+	/* No double-tap zoom delay on buttons; no grey tap flash on mobile */
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
 html, body {
 	height: 100%;
 	margin: 0;
@@ -29,8 +37,10 @@ html, body {
 	justify-content: center;
 	width: 100%;
 	min-height: 100vh;
+	min-height: 100dvh; /* excludes mobile browser chrome */
 	user-select: none;
 	-webkit-user-select: none;
+	-webkit-touch-callout: none;
 }
 
 .fixation-cross {

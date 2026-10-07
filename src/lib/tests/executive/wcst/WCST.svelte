@@ -173,15 +173,15 @@
 		{#if phase === 'running'}
 			<div class="stimulus-area">
 				<!-- Reference cards -->
-				<div class="flex gap-4 mb-10">
+				<div class="flex gap-1.5 sm:gap-4 mb-8 sm:mb-10 px-2">
 					{#each config.referenceCards as card, idx}
 						<button
-							class="w-24 h-32 bg-white rounded-lg border-2 border-slate-300 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:shadow-md transition-all {showFeedback ? 'pointer-events-none opacity-60' : 'cursor-pointer'}"
+							class="w-[4.25rem] h-28 sm:w-24 sm:h-32 bg-white rounded-lg border-2 border-slate-300 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:shadow-md transition-all {showFeedback ? 'pointer-events-none opacity-60' : 'cursor-pointer'}"
 							onclick={() => handleCardClick(idx)}
 							disabled={showFeedback}
 						>
 							{#each Array(card.count) as _, shapeIdx}
-								<svg viewBox="0 0 100 100" class="w-5 h-5">
+								<svg viewBox="0 0 100 100" class="w-4 h-4 sm:w-5 sm:h-5">
 									<path d={config.shapePaths[card.shape]} fill={config.colorHex[card.color]} />
 								</svg>
 							{/each}

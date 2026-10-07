@@ -188,16 +188,16 @@
 				</div>
 			{:else if phase === 'presenting' || phase === 'input'}
 				<div class="stimulus-area">
-					<div class="relative w-full max-w-lg aspect-square mx-auto">
+					<div class="relative w-[calc(100%-2rem)] max-w-lg aspect-square mx-auto">
 						{#each config.blockPositions as block}
 							<button
-								class="absolute w-14 h-14 rounded-lg border-2 transition-all duration-150 flex items-center justify-center text-sm font-medium
+								class="absolute w-12 h-12 sm:w-14 sm:h-14 -translate-x-1/2 -translate-y-1/2 rounded-lg border-2 touch-manipulation transition-all duration-150 flex items-center justify-center text-sm font-medium
 									{highlightedBlock === block.id
 										? 'bg-yellow-400 border-yellow-500 scale-110'
 										: phase === 'input' && userSequence.includes(block.id)
 											? 'bg-blue-100 border-blue-400 text-blue-700'
 											: 'bg-slate-200 border-slate-300 text-transparent hover:bg-slate-300'}"
-								style="left: calc({block.x}% - 28px); top: calc({block.y}% - 28px);"
+								style="left: {block.x}%; top: {block.y}%;"
 								onclick={() => handleBlockClick(block.id)}
 								disabled={phase !== 'input'}
 							>

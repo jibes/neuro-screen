@@ -5,6 +5,7 @@
 	import { t } from '$lib/i18n/index.js';
 	import TestShell from '$lib/components/TestShell.svelte';
 	import FixationCross from '$lib/components/FixationCross.svelte';
+	import NumericKeypad from '$lib/components/NumericKeypad.svelte';
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
 	import { HighResTimer } from '$lib/core/timing.js';
 	import { AudioEngine } from '$lib/core/audio-engine.js';
@@ -255,26 +256,20 @@
 			{:else if phase === 'input'}
 				<div class="stimulus-area">
 					<div class="text-center">
-						<p class="text-sm text-slate-500 mb-4">Geben Sie die Zahlen ein und druecken Sie Enter</p>
-						<div class="text-5xl font-light text-slate-900 tracking-[0.5em] min-h-[1.5em] tabular-nums mb-6">
+						<p class="text-sm text-slate-500 mb-4 px-4">Geben Sie die Zahlen ein (Tastatur oder Ziffernfeld) und bestaetigen Sie mit Enter bzw. OK</p>
+						<div class="text-4xl sm:text-5xl font-light text-slate-900 tracking-[0.3em] sm:tracking-[0.5em] min-h-[1.5em] tabular-nums mb-6 break-all px-4">
 							{userInput || '\u00A0'}
 						</div>
-						<div class="flex gap-2 justify-center">
-							<button
-								onclick={() => { userInput = userInput.slice(0, -1); }}
-								disabled={userInput.length === 0}
-								class="px-4 py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-30 transition-colors"
-							>
-								{i.common.back}
-							</button>
-							<button
-								onclick={submitResponse}
-								disabled={userInput.length === 0}
-								class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-30 transition-colors"
-							>
-								Bestaetigen
-							</button>
-						</div>
+						<NumericKeypad
+							onDigit={(d) => {
+								if (!timer.paused) userInput += String(d);
+							}}
+							onBackspace={() => (userInput = userInput.slice(0, -1))}
+							onSubmit={submitResponse}
+							backspaceDisabled={userInput.length === 0}
+							submitDisabled={userInput.length === 0}
+							submitLabel="OK"
+						/>
 					</div>
 				</div>
 			{:else if phase === 'feedback'}

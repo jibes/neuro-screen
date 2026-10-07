@@ -144,10 +144,12 @@ export function evaluateEnvironment(info: EnvironmentInfo): EnvironmentCheck[] {
 	// Input devices
 	checks.push({
 		label: 'Eingabegeraete',
-		status: info.inputDevices.includes('keyboard') ? 'ok' : 'warning',
+		status: info.inputDevices.includes('keyboard') || info.inputDevices.includes('touch') ? 'ok' : 'warning',
 		value: info.inputDevices.join(', '),
 		detail: !info.inputDevices.includes('keyboard')
-			? 'Einige Tests erfordern eine Tastatur'
+			? info.inputDevices.includes('touch')
+				? 'Bedienung ueber Bildschirmtasten; Reaktionszeiten per Touch sind mit Tastatur-Normen nur eingeschraenkt vergleichbar'
+				: 'Einige Tests erfordern eine Tastatur oder einen Touchscreen'
 			: undefined
 	});
 

@@ -167,7 +167,7 @@
 					{elapsedSeconds}s
 				</div>
 
-				<svg viewBox="0 0 100 100" class="w-full max-w-xl aspect-square">
+				<svg viewBox="0 0 100 100" class="w-full max-w-xl aspect-square touch-manipulation">
 					<!-- Connection lines -->
 					{#each completedPath as nodeId, idx}
 						{#if idx > 0}
@@ -192,15 +192,17 @@
 							tabindex="0"
 							onkeydown={(e) => { if (e.key === 'Enter') handleNodeClick(node.id); }}
 						>
+							<!-- Larger invisible hit area for touch -->
+							<circle cx={node.x} cy={node.y} r="4.3" fill="transparent" />
 							<circle
-								cx={node.x} cy={node.y} r="3.5"
+								cx={node.x} cy={node.y} r="4"
 								class="{getNodeColor(node.id)} stroke-[0.3]"
 								style={getNodeStroke(node.id)}
 							/>
 							<text
 								x={node.x} y={node.y}
 								text-anchor="middle" dominant-baseline="central"
-								class="text-[2px] font-medium fill-slate-700 select-none pointer-events-none"
+								class="text-[2.4px] font-medium fill-slate-700 select-none pointer-events-none"
 							>
 								{node.label}
 							</text>

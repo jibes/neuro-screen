@@ -4,6 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/i18n/index.js';
 	import TestShell from '$lib/components/TestShell.svelte';
+	import TouchResponsePad from '$lib/components/TouchResponsePad.svelte';
+	import { isTouchDevice } from '$lib/core/device.js';
 	import FixationCross from '$lib/components/FixationCross.svelte';
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
 	import { createTrialRunner } from '$lib/core/trial-runner.svelte.js';
@@ -16,6 +18,7 @@
 	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
+	const touch = isTouchDevice();
 	const config = STROOP_CONFIG;
 	const nextTest = getNextTest(config.testId);
 
@@ -106,6 +109,7 @@
 	bind:this={testShell}
 	testName={config.testName}
 	instructions={[...config.instructions]}
+	touchHint={i.touch.colors}
 	currentTrial={runner.currentTrial}
 	totalTrials={runner.totalTrials}
 	onStart={handleStart}
@@ -117,6 +121,14 @@
 				<p class="text-xl text-slate-600">{i.common.practiceComplete}</p>
 			</div>
 		{:else if phase === 'running'}
+			<TouchResponsePad
+				buttons={[
+					{ key: 'd', label: 'Rot', class: 'text-base px-1' },
+					{ key: 'f', label: 'Blau', class: 'text-base px-1' },
+					{ key: 'j', label: 'Gruen', class: 'text-base px-1' },
+					{ key: 'k', label: 'Gelb', class: 'text-base px-1' }
+				]}
+			/>
 			{#if stage === 'practice'}
 				<div class="fixed top-4 left-4 text-sm font-medium text-amber-600">{i.common.practice}</div>
 			{/if}
@@ -130,12 +142,14 @@
 					>
 						{currentStimulus.word}
 					</span>
+					{#if !touch}
 					<div class="mt-8 flex gap-6 text-sm text-slate-400">
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">D</kbd> Rot</span>
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">F</kbd> Blau</span>
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">J</kbd> Gruen</span>
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">K</kbd> Gelb</span>
 					</div>
+					{/if}
 				</div>
 			{:else if runner.phase === 'feedback' && runner.lastOutcome}
 				<div class="stimulus-area">

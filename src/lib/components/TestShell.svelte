@@ -5,12 +5,15 @@
 	import CountdownTimer from './CountdownTimer.svelte';
 	import ProgressBar from './ProgressBar.svelte';
 	import { requestFullscreen, exitFullscreen } from '$lib/core/fullscreen.js';
+	import { isTouchDevice } from '$lib/core/device.js';
 
 	export type TestPhase = 'instructions' | 'countdown' | 'running' | 'completed';
 
 	interface Props {
 		testName: string;
 		instructions: string[];
+		/** Extra instruction page shown on touch devices (how to respond without a keyboard) */
+		touchHint?: string;
 		children: Snippet<[{ phase: TestPhase }]>;
 		currentTrial?: number;
 		totalTrials?: number;
@@ -23,6 +26,7 @@
 	let {
 		testName,
 		instructions,
+		touchHint,
 		children,
 		currentTrial = 0,
 		totalTrials = 0,
@@ -32,6 +36,7 @@
 	}: Props = $props();
 
 	let phase = $state<TestPhase>('instructions');
+	const shownInstructions = $derived(touchHint && isTouchDevice() ? [...instructions, touchHint] : instructions);
 	let paused = $state(false);
 
 	function onVisibilityChange() {
@@ -76,11 +81,11 @@
 	}
 </script>
 
-<div class="relative min-h-screen bg-slate-50">
+<div class="relative min-h-dvh bg-slate-50">
 	{#if phase === 'instructions'}
 		<div class="pt-8">
 			<h1 class="text-center text-2xl font-semibold text-slate-900 mb-6">{testName}</h1>
-			<InstructionScreen {instructions} onComplete={onInstructionsComplete} />
+			<InstructionScreen instructions={shownInstructions} onComplete={onInstructionsComplete} />
 		</div>
 	{:else if phase === 'countdown'}
 		<CountdownTimer onComplete={onCountdownComplete} />

@@ -233,7 +233,7 @@
 	}
 </script>
 
-<div class="max-w-3xl mx-auto px-6 py-10">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 	{#if loading}
 		<p class="text-slate-400">Laden...</p>
 	{:else if !testRun}
@@ -242,7 +242,7 @@
 			{i.common.backToOverview}
 		</a>
 	{:else}
-		<div class="flex items-center justify-between mb-6">
+		<div class="flex flex-wrap items-end justify-between gap-3 mb-6">
 			<div>
 				<a href="{base}/ergebnisse" class="text-sm text-blue-600 hover:underline mb-2 inline-block">
 					&larr; {i.common.backToOverview}
@@ -276,9 +276,9 @@
 
 		<div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 mb-8">
 			{#each getSummaryEntries() as entry}
-				<div class="flex justify-between items-center px-5 py-3">
+				<div class="flex justify-between items-center gap-4 px-4 sm:px-5 py-3">
 					<span class="text-sm text-slate-600">{entry.label}</span>
-					<span class="text-sm font-medium text-slate-900">{entry.value}</span>
+					<span class="text-sm font-medium text-slate-900 text-right break-words min-w-0">{entry.value}</span>
 				</div>
 			{/each}
 		</div>
