@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/i18n/index.js';
@@ -136,7 +137,7 @@
 			<ResultsCard
 				testName={config.testName}
 				metrics={getResultMetrics()}
-				onOverview={() => goto('/')}
+				onOverview={() => goto(`${base}/`)}
 				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}

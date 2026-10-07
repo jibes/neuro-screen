@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { t } from '$lib/i18n/index.js';
 	import { gatherEnvironmentInfo, evaluateEnvironment, type EnvironmentCheck } from '$lib/core/environment-check.js';
 
@@ -61,7 +62,7 @@
 				<p class="text-sm text-amber-600 mb-4">{i.environment.warnings}</p>
 			{/if}
 			<a
-				href="/"
+				href="{base}/"
 				class="inline-flex px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
 			>
 				{hasWarnings ? i.environment.startAnyway : i.common.backToOverview}

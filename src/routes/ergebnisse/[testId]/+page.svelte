@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n/index.js';
@@ -237,13 +238,13 @@
 		<p class="text-slate-400">Laden...</p>
 	{:else if !testRun}
 		<p class="text-slate-400">Test nicht gefunden.</p>
-		<a href="/ergebnisse" class="text-blue-600 text-sm hover:underline mt-2 inline-block">
+		<a href="{base}/ergebnisse" class="text-blue-600 text-sm hover:underline mt-2 inline-block">
 			{i.common.backToOverview}
 		</a>
 	{:else}
 		<div class="flex items-center justify-between mb-6">
 			<div>
-				<a href="/ergebnisse" class="text-sm text-blue-600 hover:underline mb-2 inline-block">
+				<a href="{base}/ergebnisse" class="text-sm text-blue-600 hover:underline mb-2 inline-block">
 					&larr; {i.common.backToOverview}
 				</a>
 				<h1 class="text-2xl font-bold text-slate-900">{getTestName(testRun.testId)}</h1>

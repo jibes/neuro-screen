@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/i18n/index.js';
@@ -170,8 +171,8 @@
 			Dieser Test setzt voraus, dass zuvor der Wortlisten-Test durchgefuehrt wurde.
 		</p>
 		<div class="flex gap-3">
-			<a href="/" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">{i.common.backToOverview}</a>
-			<a href="/tests/word-list" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+			<a href="{base}/" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">{i.common.backToOverview}</a>
+			<a href="{base}/tests/word-list" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
 				{i.tests.wordList.name} starten
 			</a>
 		</div>
@@ -187,7 +188,7 @@
 			Bitte noch ca. {Math.ceil(config.minDelayMinutes - minutesSinceWordList)} Minuten warten (z. B. andere Tests durchfuehren).
 		</p>
 		<div class="flex gap-3">
-			<a href="/" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">{i.common.backToOverview}</a>
+			<a href="{base}/" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">{i.common.backToOverview}</a>
 			<button onclick={() => (prereq = 'ok')} class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">
 				Trotzdem starten
 			</button>
@@ -255,7 +256,7 @@
 			<ResultsCard
 				testName={config.testName}
 				metrics={getResultMetrics()}
-				onOverview={() => goto('/')}
+				onOverview={() => goto(`${base}/`)}
 				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}

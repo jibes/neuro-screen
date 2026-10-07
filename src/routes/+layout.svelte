@@ -4,13 +4,14 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 	import DisclaimerBanner from '$lib/components/DisclaimerBanner.svelte';
 	import { page } from '$app/state';
+	import { base } from '$app/paths';
 	import { startSessionInit } from '$lib/db/session-store.svelte.js';
 	import { gatherEnvironmentInfo } from '$lib/core/environment-check.js';
 
 	let { children } = $props();
 
 	// Hide chrome (navbar, disclaimer) during active tests
-	const isTestPage = $derived(page.url.pathname.startsWith('/tests/'));
+	const isTestPage = $derived(page.url.pathname.startsWith(`${base}/tests/`));
 
 	// Ensure a session exists so test results can be saved
 	onMount(() => {

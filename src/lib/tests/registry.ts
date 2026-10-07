@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { t } from '$lib/i18n/index.js';
 
 const i = t();
@@ -15,7 +16,7 @@ export interface TestCategory {
 }
 
 function info(id: string, key: keyof typeof i.tests): TestInfo {
-	return { id, name: i.tests[key].name, shortDesc: i.tests[key].shortDesc, href: `/tests/${id}` };
+	return { id, name: i.tests[key].name, shortDesc: i.tests[key].shortDesc, href: `${base}/tests/${id}` };
 }
 
 /** All tests, grouped by domain, in recommended order */

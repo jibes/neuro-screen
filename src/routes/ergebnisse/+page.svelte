@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { t } from '$lib/i18n/index.js';
 	import { getLatestSession, getTestRuns, clearAllData } from '$lib/db/database.js';
@@ -120,7 +121,7 @@
 		<div class="text-center py-16">
 			<p class="text-slate-400 text-lg">{i.results.noResults}</p>
 			<a
-				href="/"
+				href="{base}/"
 				class="inline-block mt-4 px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
 			>
 				Tests starten
@@ -136,7 +137,7 @@
 		<div class="space-y-3">
 			{#each testRuns as run}
 				<a
-					href="/ergebnisse/{run.id}"
+					href="{base}/ergebnisse/{run.id}"
 					class="block bg-white rounded-lg border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
 				>
 					<div class="flex items-center justify-between mb-1">

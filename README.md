@@ -86,6 +86,14 @@ pnpm build
 
 ---
 
+## Deployment
+
+Pushes to `main` are built and published to GitHub Pages by `.github/workflows/deploy.yml`
+(one-time setup: *Settings → Pages → Source: GitHub Actions*). The build sets
+`BASE_PATH=/<repo-name>` so all links resolve under the Pages subpath; local builds use the root path.
+
+---
+
 ## License
 
 [MIT](LICENSE)

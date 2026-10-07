@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { t } from '$lib/i18n/index.js';
 	import { TEST_CATEGORIES } from '$lib/tests/registry.js';
 	import { isTestCompleted } from '$lib/db/session-store.svelte.js';
@@ -15,7 +16,7 @@
 
 	<div class="mb-8">
 		<a
-			href="/umgebung"
+			href="{base}/umgebung"
 			class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
 		>
 			{i.nav.environment}
