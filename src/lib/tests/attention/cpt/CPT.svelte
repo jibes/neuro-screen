@@ -91,7 +91,7 @@
 			{ label: i.results.commissionErrors, value: summary.commissionErrors },
 			{ label: i.results.omissionErrors, value: summary.omissionErrors },
 			{ label: i.common.reactionTime + ' (' + i.common.mean + ')', value: `${summary.meanRtHits.toFixed(0)}`, unit: 'ms' },
-			{ label: 'RT-Variabilitaet (CV)', value: summary.variabilityIndex.toFixed(2) }
+			{ label: 'RT-Variabilität (CV)', value: summary.variabilityIndex.toFixed(2) }
 		];
 	}
 

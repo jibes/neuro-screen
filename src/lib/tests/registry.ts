@@ -8,6 +8,10 @@ export interface TestInfo {
 	name: string;
 	shortDesc: string;
 	href: string;
+	/** Approximate duration in minutes, including instructions and practice */
+	minutes: number;
+	/** Shown on the card, e.g. a prerequisite */
+	note?: string;
 }
 
 export interface TestCategory {
@@ -15,31 +19,35 @@ export interface TestCategory {
 	tests: TestInfo[];
 }
 
-function info(id: string, key: keyof typeof i.tests): TestInfo {
-	return { id, name: i.tests[key].name, shortDesc: i.tests[key].shortDesc, href: `${base}/tests/${id}` };
+function info(id: string, key: keyof typeof i.tests, minutes: number, note?: string): TestInfo {
+	return { id, name: i.tests[key].name, shortDesc: i.tests[key].shortDesc, href: `${base}/tests/${id}`, minutes, note };
 }
 
 /** All tests, grouped by domain, in recommended order */
 export const TEST_CATEGORIES: TestCategory[] = [
 	{
 		name: i.categories.attention,
-		tests: [info('go-nogo', 'goNogo'), info('flanker', 'flanker'), info('stroop', 'stroop'), info('cpt', 'cpt')]
+		tests: [info('go-nogo', 'goNogo', 4), info('flanker', 'flanker', 5), info('stroop', 'stroop', 6), info('cpt', 'cpt', 8)]
 	},
 	{
 		name: i.categories.workingMemory,
-		tests: [info('n-back', 'nBack'), info('digit-span', 'digitSpan'), info('corsi', 'corsi')]
+		tests: [info('n-back', 'nBack', 4), info('digit-span', 'digitSpan', 5), info('corsi', 'corsi', 5)]
 	},
 	{
 		name: i.categories.processingSpeed,
-		tests: [info('symbol-digit', 'symbolDigit'), info('trail-making-a', 'trailMakingA'), info('trail-making-b', 'trailMakingB')]
+		tests: [info('symbol-digit', 'symbolDigit', 2), info('trail-making-a', 'trailMakingA', 2), info('trail-making-b', 'trailMakingB', 3)]
 	},
 	{
 		name: i.categories.executive,
-		tests: [info('wcst', 'wcst'), info('tower', 'tower')]
+		tests: [info('wcst', 'wcst', 8), info('tower', 'tower', 6)]
 	},
 	{
 		name: i.categories.memory,
-		tests: [info('word-list', 'wordList'), info('delayed-recall', 'delayedRecall'), info('rey-figure', 'reyFigure')]
+		tests: [
+			info('word-list', 'wordList', 12),
+			info('delayed-recall', 'delayedRecall', 2, '20–30 Min. nach der Wortliste'),
+			info('rey-figure', 'reyFigure', 5)
+		]
 	}
 ];
 

@@ -7,7 +7,7 @@ const i = t();
 // Each recognition phase uses a disjoint half: 9 real + 9 distractors.
 export const REY_ELEMENTS: ReyElement[] = [
 	// Real elements (simplified geometric components)
-	{ id: 1, label: 'Grosses Rechteck', svgPath: 'M 60 40 L 240 40 L 240 160 L 60 160 Z', isReal: true },
+	{ id: 1, label: 'Großes Rechteck', svgPath: 'M 60 40 L 240 40 L 240 160 L 60 160 Z', isReal: true },
 	{ id: 2, label: 'Horizontale Mittellinie', svgPath: 'M 60 100 L 240 100', isReal: true },
 	{ id: 3, label: 'Vertikale Mittellinie', svgPath: 'M 150 40 L 150 160', isReal: true },
 	{ id: 4, label: 'Diagonale links oben', svgPath: 'M 60 40 L 150 100', isReal: true },
@@ -15,7 +15,7 @@ export const REY_ELEMENTS: ReyElement[] = [
 	{ id: 6, label: 'Kleines Rechteck links', svgPath: 'M 80 70 L 120 70 L 120 100 L 80 100 Z', isReal: true },
 	{ id: 7, label: 'Kreis rechts', svgPath: 'M 210 80 A 15 15 0 1 0 210 110 A 15 15 0 1 0 210 80', isReal: true },
 	{ id: 8, label: 'Dreieck oben', svgPath: 'M 150 10 L 170 40 L 130 40 Z', isReal: true },
-	{ id: 9, label: 'Kreuz links aussen', svgPath: 'M 30 90 L 60 90 M 45 75 L 45 105', isReal: true },
+	{ id: 9, label: 'Kreuz links außen', svgPath: 'M 30 90 L 60 90 M 45 75 L 45 105', isReal: true },
 	{ id: 10, label: 'Quadrat links unten', svgPath: 'M 70 130 L 90 130 L 90 150 L 70 150 Z', isReal: true },
 	{ id: 11, label: 'Parallele Linien rechts', svgPath: 'M 240 55 L 270 55 M 240 70 L 270 70 M 240 85 L 270 85', isReal: true },
 	{ id: 12, label: 'Diagonale links unten', svgPath: 'M 60 160 L 150 100', isReal: true },
@@ -37,7 +37,7 @@ export const REY_ELEMENTS: ReyElement[] = [
 	{ id: 27, label: 'Kleines Rechteck rechts', svgPath: 'M 180 110 L 220 110 L 220 140 L 180 140 Z', isReal: false },
 	{ id: 28, label: 'Diagonale im linken Rechteck', svgPath: 'M 80 70 L 120 100', isReal: false },
 	{ id: 29, label: 'Parallele Linien links', svgPath: 'M 30 120 L 60 120 M 30 135 L 60 135 M 30 150 L 60 150', isReal: false },
-	{ id: 30, label: 'Kreuz rechts aussen', svgPath: 'M 240 120 L 270 120 M 255 105 L 255 135', isReal: false },
+	{ id: 30, label: 'Kreuz rechts außen', svgPath: 'M 240 120 L 270 120 M 255 105 L 255 135', isReal: false },
 	{ id: 31, label: 'Vertikale Linie rechts', svgPath: 'M 240 160 L 240 190', isReal: false },
 	{ id: 32, label: 'Quadrat rechts oben', svgPath: 'M 200 50 L 220 50 L 220 70 L 200 70 Z', isReal: false },
 	{ id: 33, label: 'Raute mitte oben', svgPath: 'M 150 45 L 162 62 L 150 80 L 138 62 Z', isReal: false },

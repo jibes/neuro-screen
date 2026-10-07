@@ -26,7 +26,7 @@ export const WORD_LIST_CONFIG = {
 
 	distractorWords: [
 		'PAUKE', 'GARDINE', 'KLINGEL', 'MILCH', 'LEHRER',
-		'KINDER', 'STERN', 'WIESE', 'MUETZE', 'HIRTE',
+		'KINDER', 'STERN', 'WIESE', 'MÜTZE', 'HIRTE',
 		'MUND', 'SCHATTEN', 'WOHNUNG', 'BACH', 'BANK'
 	]
 } as const;

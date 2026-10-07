@@ -125,7 +125,7 @@
 				buttons={[
 					{ key: 'd', label: 'Rot', class: 'text-base px-1' },
 					{ key: 'f', label: 'Blau', class: 'text-base px-1' },
-					{ key: 'j', label: 'Gruen', class: 'text-base px-1' },
+					{ key: 'j', label: 'Grün', class: 'text-base px-1' },
 					{ key: 'k', label: 'Gelb', class: 'text-base px-1' }
 				]}
 			/>
@@ -146,7 +146,7 @@
 					<div class="mt-8 flex gap-6 text-sm text-slate-400">
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">D</kbd> Rot</span>
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">F</kbd> Blau</span>
-						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">J</kbd> Gruen</span>
+						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">J</kbd> Grün</span>
 						<span><kbd class="px-2 py-1 bg-slate-100 rounded text-xs">K</kbd> Gelb</span>
 					</div>
 					{/if}

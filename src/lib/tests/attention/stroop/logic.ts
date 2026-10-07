@@ -9,7 +9,7 @@ import { mean } from '$lib/utils/statistics.js';
 const colorToWord: Record<StroopColor, string> = {
 	rot: 'ROT',
 	blau: 'BLAU',
-	gruen: 'GRUEN',
+	gruen: 'GRÜN',
 	gelb: 'GELB'
 };
 

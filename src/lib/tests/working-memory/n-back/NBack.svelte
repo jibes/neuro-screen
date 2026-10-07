@@ -135,7 +135,7 @@
 					<span class="text-8xl font-light text-transparent select-none">X</span>
 				{/if}
 				<div class="absolute top-12 sm:top-4 inset-x-0 px-4 sm:px-32 text-center text-sm text-slate-400">
-					{config.nLevel}-Back: {touch ? 'Tippen' : 'Leertaste druecken'}, wenn der Buchstabe dem von vor {config.nLevel} Positionen entspricht
+					{config.nLevel}-Back: {touch ? 'Tippen' : 'Leertaste drücken'}, wenn der Buchstabe dem von vor {config.nLevel} Positionen entspricht
 				</div>
 			</div>
 		{:else if phase === 'completed' && summary}

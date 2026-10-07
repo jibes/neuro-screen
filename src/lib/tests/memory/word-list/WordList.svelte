@@ -317,7 +317,7 @@
 			{ label: 'Rekognition (Treffer)', value: `${summary.recognitionHits}/${config.targetWords.length}` },
 			{ label: 'Rekognition (Falsche)', value: summary.recognitionFalseAlarms },
 			{ label: "d' Rekognition", value: summary.dPrimeRecognition.toFixed(2) },
-			{ label: 'Woerter pro Trial', value: summary.wordsPerTrial.join(', ') }
+			{ label: 'Wörter pro Trial', value: summary.wordsPerTrial.join(', ') }
 		];
 	}
 
@@ -362,7 +362,7 @@
 
 				{:else if phase === 'recall'}
 					<div class="w-full max-w-md text-center">
-						<p class="text-sm text-slate-500 mb-1">Geben Sie erinnerte Woerter ein (Enter zum Hinzufuegen)</p>
+						<p class="text-sm text-slate-500 mb-1">Geben Sie erinnerte Wörter ein (Enter zum Hinzufügen)</p>
 						<p class="text-xs tabular-nums mb-4 {recallRemaining <= 10 ? 'text-red-500' : 'text-slate-400'}">Noch {recallRemaining} s</p>
 
 						<div class="flex gap-2 mb-4">
@@ -396,7 +396,7 @@
 							</div>
 						{/if}
 
-						<div class="text-sm text-slate-400 mb-4">{recalledWords.length} Woerter</div>
+						<div class="text-sm text-slate-400 mb-4">{recalledWords.length} Wörter</div>
 
 						<button
 							onclick={submitRecall}

@@ -171,7 +171,7 @@
 			<div class="stimulus-area">
 				<!-- Legend bar -->
 				<div class="w-full max-w-2xl mb-6 sm:mb-10 px-2 sm:px-0">
-					<div class="flex justify-between bg-white rounded-lg border border-slate-200 p-2 sm:p-3">
+					<div class="flex justify-between bg-surface rounded-lg border border-slate-200 p-2 sm:p-3">
 						{#each config.symbols as symbol, idx}
 							<div class="flex flex-col items-center gap-1">
 								<span class="text-xl sm:text-2xl select-none">{symbol}</span>

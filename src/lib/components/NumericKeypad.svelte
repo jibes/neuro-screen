@@ -21,7 +21,7 @@
 	const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 	const baseClass =
 		'h-14 sm:h-12 rounded-xl border text-xl font-medium shadow-sm active:scale-95 transition-transform touch-manipulation select-none disabled:opacity-30';
-	const keyClass = `${baseClass} border-slate-300 bg-white text-slate-800 active:bg-slate-100`;
+	const keyClass = `${baseClass} border-slate-300 bg-surface text-slate-800 active:bg-slate-100`;
 	const submitClass = `${baseClass} border-blue-600 bg-blue-600 text-white active:bg-blue-700`;
 </script>
 
@@ -40,7 +40,7 @@
 	{/each}
 	{#if onBackspace || onSubmit}
 		{#if onBackspace}
-			<button type="button" class={keyClass} aria-label="Loeschen" disabled={backspaceDisabled} onclick={onBackspace}>
+			<button type="button" class={keyClass} aria-label="Löschen" disabled={backspaceDisabled} onclick={onBackspace}>
 				&#9003;
 			</button>
 		{:else}

@@ -100,7 +100,7 @@
 
 		// Phase 1: Study the figure
 		phase = 'study';
-		phaseLabel = 'Figur einpraegen';
+		phaseLabel = 'Figur einprägen';
 		await countdown(config.studyTimeMs);
 		if (!running) return;
 
@@ -120,7 +120,7 @@
 
 		// Phase 4: Delayed recognition with new items
 		phase = 'delayed';
-		phaseLabel = 'Verzoegerte Wiedererkennung';
+		phaseLabel = 'Verzögerte Wiedererkennung';
 		const delayMinutes = Math.round(((timer.now() - studyEnd) / 60000) * 10) / 10;
 		const delayedTimeMs = await runRecognitionPhase(sets.delayed, delayedResponses);
 		if (!running) return;
@@ -166,9 +166,9 @@
 		return [
 			{ label: "d' sofort", value: summary.immediateDPrime.toFixed(2), highlight: true },
 			{ label: 'Treffer / Falsche Alarme (sofort)', value: `${summary.immediateHits}/${summary.immediateTargets} · ${summary.immediateFalseAlarms}/${summary.immediateDistractors}` },
-			{ label: "d' verzoegert", value: summary.delayedDPrime.toFixed(2), highlight: true },
-			{ label: 'Treffer / Falsche Alarme (verzoegert)', value: `${summary.delayedHits}/${summary.delayedTargets} · ${summary.delayedFalseAlarms}/${summary.delayedDistractors}` },
-			{ label: 'Verzoegerung', value: `${summary.delayMinutes}`, unit: 'min' }
+			{ label: "d' verzögert", value: summary.delayedDPrime.toFixed(2), highlight: true },
+			{ label: 'Treffer / Falsche Alarme (verzögert)', value: `${summary.delayedHits}/${summary.delayedTargets} · ${summary.delayedFalseAlarms}/${summary.delayedDistractors}` },
+			{ label: 'Verzögerung', value: `${summary.delayMinutes}`, unit: 'min' }
 		];
 	}
 
@@ -203,16 +203,16 @@
 
 				{#if phase === 'study'}
 					<div class="text-center">
-						<div class="absolute top-4 right-4 text-lg font-mono tabular-nums" class:text-red-500={countdownRemaining <= 5} class:text-slate-400={countdownRemaining > 5}>
+						<div class="absolute top-5 right-16 text-lg font-mono tabular-nums" class:text-red-500={countdownRemaining <= 5} class:text-slate-400={countdownRemaining > 5}>
 							{countdownRemaining}s
 						</div>
-						<p class="text-sm text-slate-500 mb-4">Praegen Sie sich diese Figur ein</p>
-						<svg viewBox="0 0 300 200" class="w-full max-w-lg border border-slate-200 rounded-lg bg-white p-2">
+						<p class="text-sm text-slate-500 mb-4">Prägen Sie sich diese Figur ein</p>
+						<svg viewBox="0 0 300 200" class="text-slate-800 w-full max-w-lg border border-slate-200 rounded-lg bg-surface p-2">
 							{#each REY_ELEMENTS.filter(e => e.isReal) as element}
 								<path
 									d={element.svgPath}
 									fill="none"
-									stroke="#1e293b"
+									stroke="currentColor"
 									stroke-width="1.5"
 									stroke-linecap="round"
 									stroke-linejoin="round"
@@ -226,11 +226,11 @@
 						<p class="text-sm text-slate-500 mb-4">
 							War dieses Element in der Figur enthalten?
 						</p>
-						<svg viewBox="0 0 300 200" class="w-64 h-48 border border-slate-200 rounded-lg bg-white p-2 mx-auto mb-6">
+						<svg viewBox="0 0 300 200" class="text-slate-800 w-64 h-48 border border-slate-200 rounded-lg bg-surface p-2 mx-auto mb-6">
 							<path
 								d={currentElement.svgPath}
 								fill="none"
-								stroke="#1e293b"
+								stroke="currentColor"
 								stroke-width="2"
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -255,7 +255,7 @@
 				{:else if phase === 'delay'}
 					<div class="text-center">
 						<span class="text-xl text-slate-500">Pause ({countdownRemaining}s)</span>
-						<p class="text-sm text-slate-400 mt-2">Gleich werden weitere Elemente gezeigt. Entscheiden Sie wieder, ob sie zur Figur gehoerten.</p>
+						<p class="text-sm text-slate-400 mt-2">Gleich werden weitere Elemente gezeigt. Entscheiden Sie wieder, ob sie zur Figur gehörten.</p>
 					</div>
 
 				{:else}

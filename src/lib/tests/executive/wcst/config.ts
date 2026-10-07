@@ -22,10 +22,10 @@ export const WCST_CONFIG = {
 	] as WCSTCard[],
 
 	colorHex: {
-		rot: '#dc2626',
-		blau: '#2563eb',
-		gruen: '#16a34a',
-		gelb: '#ca8a04'
+		rot: 'var(--color-stim-rot)',
+		blau: 'var(--color-stim-blau)',
+		gruen: 'var(--color-stim-gruen)',
+		gelb: 'var(--color-stim-gelb)'
 	} as Record<string, string>,
 
 	shapePaths: {

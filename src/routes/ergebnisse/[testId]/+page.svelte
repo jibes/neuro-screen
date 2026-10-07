@@ -55,11 +55,11 @@
 		switch (s.type) {
 			case 'go-nogo':
 				entries.push(
-					{ label: 'Gesamtdurchgaenge', value: `${s.totalTrials}` },
-					{ label: 'Go-Durchgaenge', value: `${s.goTrials}` },
-					{ label: 'No-Go-Durchgaenge', value: `${s.noGoTrials}` },
+					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
+					{ label: 'Go-Durchgänge', value: `${s.goTrials}` },
+					{ label: 'No-Go-Durchgänge', value: `${s.noGoTrials}` },
 					{ label: 'Treffer', value: `${s.hits}` },
-					{ label: 'Korrekte Zurueckweisungen', value: `${s.correctRejections}` },
+					{ label: 'Korrekte Zurückweisungen', value: `${s.correctRejections}` },
 					{ label: i.results.commissionErrors, value: `${s.commissionErrors}` },
 					{ label: i.results.omissionErrors, value: `${s.omissionErrors}` },
 					{ label: `RT ${i.common.mean}`, value: `${s.meanRtHits.toFixed(0)} ms` },
@@ -72,7 +72,7 @@
 				break;
 			case 'flanker':
 				entries.push(
-					{ label: 'Gesamtdurchgaenge', value: `${s.totalTrials}` },
+					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
 					{ label: 'RT kongruent', value: `${s.meanRtCongruent.toFixed(0)} ms` },
 					{ label: 'RT inkongruent', value: `${s.meanRtIncongruent.toFixed(0)} ms` },
 					{ label: i.results.flankerEffect, value: `${s.flankerEffect.toFixed(0)} ms` },
@@ -84,8 +84,8 @@
 			case 'digit-span':
 				entries.push(
 					{ label: i.results.forwardSpan, value: `${s.forwardSpan}` },
-					{ label: 'Korrekte Durchgaenge', value: `${s.forwardTrialsCorrect}` },
-					{ label: 'Gesamtdurchgaenge', value: `${s.forwardTotalTrials}` },
+					{ label: 'Korrekte Durchgänge', value: `${s.forwardTrialsCorrect}` },
+					{ label: 'Gesamtdurchgänge', value: `${s.forwardTotalTrials}` },
 					{ label: 'Score', value: `${s.forwardScore}` }
 				);
 				break;
@@ -106,7 +106,7 @@
 			case 'n-back':
 				entries.push(
 					{ label: 'N-Level', value: `${s.nLevel}` },
-					{ label: 'Gesamtdurchgaenge', value: `${s.totalTrials}` },
+					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
 					{ label: i.results.hits, value: `${s.hits}` },
 					{ label: i.results.falseAlarms, value: `${s.falseAlarms}` },
 					{ label: i.results.misses, value: `${s.misses}` },
@@ -117,22 +117,22 @@
 				break;
 			case 'cpt':
 				entries.push(
-					{ label: 'Gesamtdurchgaenge', value: `${s.totalTrials}` },
-					{ label: 'Target-Durchgaenge', value: `${s.targetTrials}` },
+					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
+					{ label: 'Target-Durchgänge', value: `${s.targetTrials}` },
 					{ label: i.results.hits, value: `${s.hits}` },
 					{ label: i.results.commissionErrors, value: `${s.commissionErrors}` },
 					{ label: i.results.omissionErrors, value: `${s.omissionErrors}` },
 					{ label: `RT ${i.common.mean}`, value: `${s.meanRtHits.toFixed(0)} ms` },
 					{ label: `RT ${i.common.sd}`, value: `${s.sdRtHits.toFixed(0)} ms` },
 					{ label: i.results.dPrime, value: s.dPrime.toFixed(2) },
-					{ label: 'Variabilitaetsindex (CV)', value: s.variabilityIndex.toFixed(2) },
+					{ label: 'Variabilitätsindex (CV)', value: s.variabilityIndex.toFixed(2) },
 					{ label: 'RT pro Block', value: s.rtByBlock.map(r => r.toFixed(0)).join(', ') + ' ms' }
 				);
 				break;
 			case 'corsi':
 				entries.push(
-					{ label: 'Vorwaertsspanne', value: `${s.forwardSpan}` },
-					{ label: 'Vorwaerts-Score', value: `${s.forwardScore}` },
+					{ label: 'Vorwärtsspanne', value: `${s.forwardSpan}` },
+					{ label: 'Vorwärts-Score', value: `${s.forwardScore}` },
 					{ label: 'Gesamt-Score', value: `${s.totalScore}` },
 					{ label: 'Mittlere Antwortzeit', value: `${s.meanResponseTime.toFixed(0)} ms` }
 				);
@@ -156,7 +156,7 @@
 				break;
 			case 'wcst':
 				entries.push(
-					{ label: 'Gesamtdurchgaenge', value: `${s.totalTrials}` },
+					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
 					{ label: 'Kategorien', value: `${s.categoriesCompleted}` },
 					{ label: 'Gesamtfehler', value: `${s.totalErrors}` },
 					{ label: 'Perseverative Antworten', value: `${s.perseverativeResponses}` },
@@ -169,19 +169,19 @@
 				break;
 			case 'tower':
 				entries.push(
-					{ label: 'Geloest', value: `${s.problemsSolved} / ${s.totalProblems}` },
-					{ label: 'Gesamtzuege', value: `${s.totalMoves}` },
-					{ label: 'Optimale Zuege', value: `${s.optimalMoves}` },
-					{ label: 'Ueberzaehlige Zuege', value: `${s.excessMoves}` },
+					{ label: 'Gelöst', value: `${s.problemsSolved} / ${s.totalProblems}` },
+					{ label: 'Gesamtzüge', value: `${s.totalMoves}` },
+					{ label: 'Optimale Züge', value: `${s.optimalMoves}` },
+					{ label: 'Überzählige Züge', value: `${s.excessMoves}` },
 					{ label: 'Mittlere Planungszeit', value: `${(s.meanPlanningTime / 1000).toFixed(1)} s` },
-					{ label: 'Mittlere Ausfuehrungszeit', value: `${(s.meanExecutionTime / 1000).toFixed(1)} s` },
-					{ label: 'Regelverstoesse', value: `${s.ruleViolations}` }
+					{ label: 'Mittlere Ausführungszeit', value: `${(s.meanExecutionTime / 1000).toFixed(1)} s` },
+					{ label: 'Regelverstöße', value: `${s.ruleViolations}` }
 				);
 				break;
 			case 'word-list':
 				entries.push(
-					{ label: 'Lerndurchgaenge', value: `${s.learningTrials}` },
-					{ label: 'Woerter pro Trial', value: s.wordsPerTrial.join(', ') },
+					{ label: 'Lerndurchgänge', value: `${s.learningTrials}` },
+					{ label: 'Wörter pro Trial', value: s.wordsPerTrial.join(', ') },
 					{ label: 'Gelernt (letzter Trial)', value: `${s.totalLearned}` },
 					{ label: 'Lernsteigung', value: s.learningSlope.toFixed(2) },
 					{ label: 'Kurzabruf', value: `${s.shortDelayFreeRecall}` },
@@ -192,10 +192,10 @@
 				break;
 			case 'delayed-recall':
 				entries.push(
-					{ label: 'Verzoegerter Abruf', value: `${s.delayedRecall} / ${s.totalItems}` },
+					{ label: 'Verzögerter Abruf', value: `${s.delayedRecall} / ${s.totalItems}` },
 					{ label: 'Unmittelbarer Abruf (letzter Lerndurchgang)', value: `${s.immediateRecall} / ${s.totalItems}` },
 					{ label: 'Behaltenrate', value: `${(s.retentionRate * 100).toFixed(0)}%` },
-					{ label: 'Verzoegerung', value: `${s.delayMinutes} min` },
+					{ label: 'Verzögerung', value: `${s.delayMinutes} min` },
 					{ label: 'Intrusionsfehler', value: `${s.intrusionErrors}` }
 				);
 				break;
@@ -205,11 +205,11 @@
 					{ label: 'Treffer sofort', value: `${s.immediateHits} / ${s.immediateTargets}` },
 					{ label: 'Falsche Alarme sofort', value: `${s.immediateFalseAlarms} / ${s.immediateDistractors}` },
 					{ label: 'Zeit sofort', value: `${(s.immediateTimeMs / 1000).toFixed(1)} s` },
-					{ label: "d' verzoegert", value: s.delayedDPrime.toFixed(2) },
-					{ label: 'Treffer verzoegert', value: `${s.delayedHits} / ${s.delayedTargets}` },
-					{ label: 'Falsche Alarme verzoegert', value: `${s.delayedFalseAlarms} / ${s.delayedDistractors}` },
-					{ label: 'Zeit verzoegert', value: `${(s.delayedTimeMs / 1000).toFixed(1)} s` },
-					{ label: 'Verzoegerung', value: `${s.delayMinutes} min` }
+					{ label: "d' verzögert", value: s.delayedDPrime.toFixed(2) },
+					{ label: 'Treffer verzögert', value: `${s.delayedHits} / ${s.delayedTargets}` },
+					{ label: 'Falsche Alarme verzögert', value: `${s.delayedFalseAlarms} / ${s.delayedDistractors}` },
+					{ label: 'Zeit verzögert', value: `${(s.delayedTimeMs / 1000).toFixed(1)} s` },
+					{ label: 'Verzögerung', value: `${s.delayMinutes} min` }
 				);
 				break;
 			default:
@@ -232,6 +232,10 @@
 		});
 	}
 </script>
+
+<svelte:head>
+	<title>{testRun ? getTestName(testRun.testId) : 'Ergebnis'} · Ergebnisse · NeuroScreen</title>
+</svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 	{#if loading}
@@ -274,7 +278,7 @@
 			</div>
 		{/if}
 
-		<div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 mb-8">
+		<div class="bg-surface rounded-lg border border-slate-200 divide-y divide-slate-100 mb-8">
 			{#each getSummaryEntries() as entry}
 				<div class="flex justify-between items-center gap-4 px-4 sm:px-5 py-3">
 					<span class="text-sm text-slate-600">{entry.label}</span>
@@ -284,7 +288,7 @@
 		</div>
 
 		{#if trials.length > 0}
-			<h2 class="text-lg font-semibold text-slate-800 mb-3">Einzelne Durchgaenge ({trials.length})</h2>
+			<h2 class="text-lg font-semibold text-slate-800 mb-3">Einzelne Durchgänge ({trials.length})</h2>
 			<div class="overflow-x-auto">
 				<table class="w-full text-sm">
 					<thead>

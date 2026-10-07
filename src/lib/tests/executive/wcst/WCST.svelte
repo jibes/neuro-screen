@@ -176,13 +176,13 @@
 				<div class="flex gap-1.5 sm:gap-4 mb-8 sm:mb-10 px-2">
 					{#each config.referenceCards as card, idx}
 						<button
-							class="w-[4.25rem] h-28 sm:w-24 sm:h-32 bg-white rounded-lg border-2 border-slate-300 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:shadow-md transition-all {showFeedback ? 'pointer-events-none opacity-60' : 'cursor-pointer'}"
+							class="w-[4.25rem] h-28 sm:w-24 sm:h-32 bg-surface rounded-lg border-2 border-slate-300 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:shadow-md transition-all {showFeedback ? 'pointer-events-none opacity-60' : 'cursor-pointer'}"
 							onclick={() => handleCardClick(idx)}
 							disabled={showFeedback}
 						>
 							{#each Array(card.count) as _, shapeIdx}
 								<svg viewBox="0 0 100 100" class="w-4 h-4 sm:w-5 sm:h-5">
-									<path d={config.shapePaths[card.shape]} fill={config.colorHex[card.color]} />
+									<path d={config.shapePaths[card.shape]} style="fill: {config.colorHex[card.color]}" />
 								</svg>
 							{/each}
 						</button>
@@ -198,17 +198,17 @@
 
 				<!-- Test card -->
 				{#if currentCard}
-					<div class="w-28 h-36 bg-white rounded-lg border-2 border-slate-400 flex flex-col items-center justify-center gap-1 shadow-lg">
+					<div class="w-28 h-36 bg-surface rounded-lg border-2 border-slate-400 flex flex-col items-center justify-center gap-1 shadow-lg">
 						{#each Array(currentCard.count) as _}
 							<svg viewBox="0 0 100 100" class="w-6 h-6">
-								<path d={config.shapePaths[currentCard.shape]} fill={config.colorHex[currentCard.color]} />
+								<path d={config.shapePaths[currentCard.shape]} style="fill: {config.colorHex[currentCard.color]}" />
 							</svg>
 						{/each}
 					</div>
 				{/if}
 
 				<div class="mt-6 text-sm text-slate-400">
-					Trial {Math.min(trialNumber + 1, config.maxTrials)} / {config.maxTrials}
+					Durchgang {Math.min(trialNumber + 1, config.maxTrials)} / {config.maxTrials}
 				</div>
 			</div>
 		{:else if phase === 'completed' && summary}

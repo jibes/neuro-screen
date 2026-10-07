@@ -97,7 +97,12 @@ export async function saveRunToSession(
 				.filter((c) => c.status !== 'ok')
 				.map((c) => `${c.label}: ${c.value}${c.detail ? ` (${c.detail})` : ''}`)
 		: [];
-	await saveTestRun({ ...run, sessionId: session.id, environmentWarnings }, trials);
+	// Record the colour scheme: stimulus contrast differs between light and dark mode
+	const displayTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+	await saveTestRun(
+		{ ...run, config: { ...run.config, displayTheme }, sessionId: session.id, environmentWarnings },
+		trials
+	);
 	markTestCompleted(run.testId);
 	return true;
 }

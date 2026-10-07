@@ -2,17 +2,28 @@ import type { RecallResult, RecognitionItem } from './types.js';
 import type { WordListSummary } from '$lib/db/models.js';
 import { dPrime } from '$lib/utils/statistics.js';
 
+/** Uppercase and fold umlauts/ß so "Mütze", "MUETZE" and "muetze" match */
+export function normalizeWord(word: string): string {
+	return word
+		.trim()
+		.toUpperCase()
+		.replace(/Ä/g, 'AE')
+		.replace(/Ö/g, 'OE')
+		.replace(/Ü/g, 'UE')
+		.replace(/ẞ/g, 'SS');
+}
+
 export function scoreRecall(
 	recalledWords: string[],
 	targetWords: readonly string[]
 ): { correctCount: number; intrusionCount: number } {
-	const targetSet = new Set(targetWords.map((w) => w.toUpperCase().trim()));
+	const targetSet = new Set(targetWords.map(normalizeWord));
 	let correctCount = 0;
 	let intrusionCount = 0;
 	const counted = new Set<string>();
 
 	for (const word of recalledWords) {
-		const normalized = word.toUpperCase().trim();
+		const normalized = normalizeWord(word);
 		if (!normalized) continue;
 		if (counted.has(normalized)) continue;
 		counted.add(normalized);

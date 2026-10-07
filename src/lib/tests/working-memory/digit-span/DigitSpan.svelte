@@ -208,8 +208,8 @@
 		if (!summary) return [];
 		return [
 			{ label: i.results.forwardSpan, value: summary.forwardSpan, highlight: true },
-			{ label: 'Korrekte Durchgaenge', value: summary.forwardTrialsCorrect },
-			{ label: 'Gesamt-Durchgaenge', value: summary.forwardTotalTrials },
+			{ label: 'Korrekte Durchgänge', value: summary.forwardTrialsCorrect },
+			{ label: 'Gesamt-Durchgänge', value: summary.forwardTotalTrials },
 			{ label: 'Score', value: summary.forwardScore, highlight: true }
 		];
 	}
@@ -256,7 +256,7 @@
 			{:else if phase === 'input'}
 				<div class="stimulus-area">
 					<div class="text-center">
-						<p class="text-sm text-slate-500 mb-4 px-4">Geben Sie die Zahlen ein (Tastatur oder Ziffernfeld) und bestaetigen Sie mit Enter bzw. OK</p>
+						<p class="text-sm text-slate-500 mb-4 px-4">Geben Sie die Zahlen ein (Tastatur oder Ziffernfeld) und bestätigen Sie mit Enter bzw. OK</p>
 						<div class="text-4xl sm:text-5xl font-light text-slate-900 tracking-[0.3em] sm:tracking-[0.5em] min-h-[1.5em] tabular-nums mb-6 break-all px-4">
 							{userInput || '\u00A0'}
 						</div>

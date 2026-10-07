@@ -2,6 +2,8 @@
 	import { base } from '$app/paths';
 	import { t } from '$lib/i18n/index.js';
 	import { page } from '$app/state';
+	import ThemeToggle from './ThemeToggle.svelte';
+	import favicon from '$lib/assets/favicon.svg';
 	const i = t();
 
 	const links = [
@@ -21,22 +23,27 @@
 	};
 </script>
 
-<nav class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3">
-	<div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-		<a href="{base}/" class="text-lg font-semibold text-slate-900 hover:text-blue-600 transition-colors">
+<nav class="sticky top-0 z-20 bg-surface/90 backdrop-blur border-b border-slate-200 px-4 sm:px-6 py-3">
+	<div class="max-w-5xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2">
+		<a href="{base}/" class="flex items-center gap-2 text-lg font-semibold text-slate-900 hover:text-blue-600 transition-colors">
+			<img src={favicon} alt="" class="h-6 w-6" />
 			{i.app.title}
 		</a>
-		<div class="flex gap-4 sm:gap-6">
+		<div class="order-3 sm:order-2 flex w-full sm:w-auto gap-4 sm:gap-6">
 			{#each links as link}
 				<a
 					href={link.href}
-					class="text-sm transition-colors {isActive(link.href)
+					aria-current={isActive(link.href) ? 'page' : undefined}
+					class="text-sm py-1 transition-colors {isActive(link.href)
 						? 'text-blue-600 font-medium'
 						: 'text-slate-600 hover:text-slate-900'}"
 				>
 					{link.label}
 				</a>
 			{/each}
+		</div>
+		<div class="order-2 sm:order-3 ml-auto">
+			<ThemeToggle />
 		</div>
 	</div>
 </nav>

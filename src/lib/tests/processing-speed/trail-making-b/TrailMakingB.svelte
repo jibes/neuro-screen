@@ -163,7 +163,7 @@
 	{#snippet children({ phase })}
 		{#if phase === 'running'}
 			<div class="stimulus-area relative">
-				<div class="absolute top-4 right-4 text-sm tabular-nums text-slate-400">
+				<div class="absolute top-5 right-16 text-sm tabular-nums text-slate-400">
 					{elapsedSeconds}s
 				</div>
 

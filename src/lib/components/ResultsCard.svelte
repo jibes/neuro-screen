@@ -24,7 +24,7 @@
 		<h2 class="text-2xl font-semibold text-slate-900 mb-2">{i.common.testComplete}</h2>
 		<h3 class="text-lg text-slate-500 mb-6">{testName}</h3>
 
-		<div class="bg-white rounded-lg shadow-sm border border-slate-200 divide-y divide-slate-100">
+		<div class="bg-surface rounded-lg shadow-sm border border-slate-200 divide-y divide-slate-100">
 			{#each metrics as metric}
 				<div class="flex justify-between items-center gap-4 px-4 sm:px-5 py-3">
 					<span class="text-sm text-slate-600">{metric.label}</span>

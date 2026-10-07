@@ -30,7 +30,7 @@
 	}
 
 	async function handleClearAll() {
-		if (confirm('Alle Daten unwiderruflich loeschen?')) {
+		if (confirm('Alle Daten unwiderruflich löschen?')) {
 			await clearAllData();
 			// The deleted session must not be reused; a fresh one is created on the next save
 			clearSession();
@@ -81,18 +81,22 @@
 			case 'wcst':
 				return `Kategorien: ${s.categoriesCompleted}, Perseverative Fehler: ${s.perseverativeErrors}`;
 			case 'tower':
-				return `Geloest: ${s.problemsSolved}/${s.totalProblems}, Planungszeit: ${(s.meanPlanningTime / 1000).toFixed(1)} s`;
+				return `Gelöst: ${s.problemsSolved}/${s.totalProblems}, Planungszeit: ${(s.meanPlanningTime / 1000).toFixed(1)} s`;
 			case 'word-list':
 				return `Gelernt: ${s.totalLearned}, d' = ${s.dPrimeRecognition.toFixed(2)}`;
 			case 'delayed-recall':
 				return `Abruf: ${s.delayedRecall}/${s.totalItems}, Behaltenrate: ${(s.retentionRate * 100).toFixed(0)}%`;
 			case 'rey-figure':
-				return `d' sofort: ${s.immediateDPrime.toFixed(2)}, verzoegert: ${s.delayedDPrime.toFixed(2)}`;
+				return `d' sofort: ${s.immediateDPrime.toFixed(2)}, verzögert: ${s.delayedDPrime.toFixed(2)}`;
 			default:
 				return '';
 		}
 	}
 </script>
+
+<svelte:head>
+	<title>Ergebnisse · NeuroScreen</title>
+</svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 	<div class="flex flex-wrap items-center justify-between gap-3 mb-8">
@@ -138,7 +142,7 @@
 			{#each testRuns as run}
 				<a
 					href="{base}/ergebnisse/{run.id}"
-					class="block bg-white rounded-lg border border-slate-200 p-4 sm:p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+					class="block bg-surface rounded-lg border border-slate-200 p-4 sm:p-5 hover:border-blue-300 hover:shadow-sm transition-all"
 				>
 					<div class="flex flex-wrap items-center justify-between gap-x-3 mb-1">
 						<h3 class="font-medium text-slate-900">

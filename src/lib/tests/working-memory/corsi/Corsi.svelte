@@ -217,14 +217,14 @@
 								disabled={userSequence.length === 0}
 								class="px-4 py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-30 transition-colors"
 							>
-								Zuruecksetzen
+								Zurücksetzen
 							</button>
 							<button
 								onclick={submitResponse}
 								disabled={userSequence.length === 0}
 								class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-30 transition-colors"
 							>
-								Bestaetigen
+								Bestätigen
 							</button>
 						</div>
 					{:else}

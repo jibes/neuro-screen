@@ -19,6 +19,10 @@
 	const hasWarnings = $derived(checks.some((c) => c.status !== 'ok'));
 </script>
 
+<svelte:head>
+	<title>Umgebungscheck · NeuroScreen</title>
+</svelte:head>
+
 <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 	<h1 class="text-2xl font-bold text-slate-900 mb-2">{i.environment.title}</h1>
 	<p class="text-slate-500 mb-8">{i.environment.description}</p>
@@ -29,10 +33,10 @@
 			disabled={loading}
 			class="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
 		>
-			{loading ? 'Wird geprueft...' : i.environment.runCheck}
+			{loading ? 'Wird geprüft...' : i.environment.runCheck}
 		</button>
 	{:else}
-		<div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
+		<div class="bg-surface rounded-lg border border-slate-200 divide-y divide-slate-100">
 			{#each checks as check}
 				<div class="flex items-center justify-between gap-4 px-4 sm:px-5 py-3">
 					<div class="flex items-center gap-3 shrink-0">

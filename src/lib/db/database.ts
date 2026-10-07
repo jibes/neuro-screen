@@ -51,7 +51,7 @@ export async function saveTestRun(
 	trials: Omit<TrialData, 'id' | 'testRunId'>[]
 ): Promise<number> {
 	if (!testRun.sessionId) {
-		throw new Error('saveTestRun: keine gueltige sessionId');
+		throw new Error('saveTestRun: keine gültige sessionId');
 	}
 
 	// Sanitize to remove undefined/function values that IndexedDB cannot store

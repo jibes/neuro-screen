@@ -143,10 +143,10 @@
 	function getResultMetrics() {
 		if (!summary) return [];
 		return [
-			{ label: 'Verzoegerter Abruf', value: `${summary.delayedRecall}/${summary.totalItems}`, highlight: true },
+			{ label: 'Verzögerter Abruf', value: `${summary.delayedRecall}/${summary.totalItems}`, highlight: true },
 			{ label: 'Unmittelbarer Abruf (Trial 5)', value: `${summary.immediateRecall}/${summary.totalItems}` },
 			{ label: 'Behaltenrate', value: `${(summary.retentionRate * 100).toFixed(0)}`, unit: '%', highlight: true },
-			{ label: 'Verzoegerung', value: `${summary.delayMinutes}`, unit: 'min' },
+			{ label: 'Verzögerung', value: `${summary.delayMinutes}`, unit: 'min' },
 			{ label: 'Intrusionsfehler', value: summary.intrusionErrors }
 		];
 	}
@@ -168,7 +168,7 @@
 	<div class="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
 		<h1 class="text-2xl font-semibold text-slate-900 mb-4">{config.testName}</h1>
 		<p class="text-slate-600 mb-6 max-w-md">
-			Dieser Test setzt voraus, dass zuvor der Wortlisten-Test durchgefuehrt wurde.
+			Dieser Test setzt voraus, dass zuvor der Wortlisten-Test durchgeführt wurde.
 		</p>
 		<div class="flex gap-3">
 			<a href="{base}/" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">{i.common.backToOverview}</a>
@@ -181,11 +181,11 @@
 	<div class="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
 		<h1 class="text-2xl font-semibold text-slate-900 mb-4">{config.testName}</h1>
 		<p class="text-slate-600 mb-2 max-w-md">
-			Der Wortlisten-Test liegt erst {Math.floor(minutesSinceWordList)} Minuten zurueck.
-			Empfohlen ist eine Verzoegerung von mindestens {config.minDelayMinutes} Minuten.
+			Der Wortlisten-Test liegt erst {Math.floor(minutesSinceWordList)} Minuten zurück.
+			Empfohlen ist eine Verzögerung von mindestens {config.minDelayMinutes} Minuten.
 		</p>
 		<p class="text-sm text-slate-400 mb-6 max-w-md">
-			Bitte noch ca. {Math.ceil(config.minDelayMinutes - minutesSinceWordList)} Minuten warten (z. B. andere Tests durchfuehren).
+			Bitte noch ca. {Math.ceil(config.minDelayMinutes - minutesSinceWordList)} Minuten warten (z. B. andere Tests durchführen).
 		</p>
 		<div class="flex gap-3">
 			<a href="{base}/" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">{i.common.backToOverview}</a>
@@ -207,13 +207,13 @@
 	{#snippet children({ phase })}
 		{#if phase === 'running'}
 			<div class="stimulus-area">
-				<div class="absolute top-4 right-4 text-lg font-mono tabular-nums" class:text-red-500={remainingSeconds <= 10} class:text-slate-400={remainingSeconds > 10}>
+				<div class="absolute top-5 right-16 text-lg font-mono tabular-nums" class:text-red-500={remainingSeconds <= 10} class:text-slate-400={remainingSeconds > 10}>
 					{Math.floor(remainingSeconds / 60)}:{(remainingSeconds % 60).toString().padStart(2, '0')}
 				</div>
 
 				<div class="w-full max-w-md text-center">
-					<p class="text-sm text-slate-500 mb-2">Erinnern Sie sich an die Woerter der ersten Liste</p>
-					<p class="text-sm text-slate-400 mb-4">Geben Sie Woerter ein (Enter zum Hinzufuegen)</p>
+					<p class="text-sm text-slate-500 mb-2">Erinnern Sie sich an die Wörter der ersten Liste</p>
+					<p class="text-sm text-slate-400 mb-4">Geben Sie Wörter ein (Enter zum Hinzufügen)</p>
 
 					<div class="flex gap-2 mb-4">
 						<input
@@ -242,7 +242,7 @@
 						</div>
 					{/if}
 
-					<div class="text-sm text-slate-400 mb-4">{recalledWords.length} Woerter</div>
+					<div class="text-sm text-slate-400 mb-4">{recalledWords.length} Wörter</div>
 
 					<button
 						onclick={finishTest}

@@ -101,7 +101,7 @@ export function evaluateEnvironment(info: EnvironmentInfo): EnvironmentCheck[] {
 	const minWidth = 1024;
 	const minHeight = 768;
 	checks.push({
-		label: 'Bildschirmaufloesung',
+		label: 'Bildschirmauflösung',
 		status: info.screenWidth >= minWidth && info.screenHeight >= minHeight ? 'ok' : 'warning',
 		value: `${info.screenWidth} x ${info.screenHeight}`,
 		detail: info.screenWidth < minWidth || info.screenHeight < minHeight
@@ -115,17 +115,17 @@ export function evaluateEnvironment(info: EnvironmentInfo): EnvironmentCheck[] {
 		status: info.estimatedRefreshRate >= 55 ? 'ok' : 'warning',
 		value: `${info.estimatedRefreshRate} Hz`,
 		detail: info.estimatedRefreshRate < 55
-			? 'Niedrige Bildwiederholrate kann die Timing-Praezision beeintraechtigen'
+			? 'Niedrige Bildwiederholrate kann die Timing-Präzision beeinträchtigen'
 			: undefined
 	});
 
 	// Timer resolution
 	checks.push({
-		label: 'Timer-Aufloesung',
+		label: 'Timer-Auflösung',
 		status: info.timerResolutionMs <= 1 ? 'ok' : info.timerResolutionMs <= 5 ? 'warning' : 'error',
 		value: `${info.timerResolutionMs.toFixed(3)} ms`,
 		detail: info.timerResolutionMs > 1
-			? 'Browser-Sicherheitseinstellungen begrenzen die Timer-Praezision'
+			? 'Browser-Sicherheitseinstellungen begrenzen die Timer-Präzision'
 			: undefined
 	});
 
@@ -133,9 +133,9 @@ export function evaluateEnvironment(info: EnvironmentInfo): EnvironmentCheck[] {
 	checks.push({
 		label: 'Web Audio API',
 		status: info.webAudioSupported ? 'ok' : 'error',
-		value: info.webAudioSupported ? 'Verfuegbar' : 'Nicht verfuegbar',
+		value: info.webAudioSupported ? 'Verfügbar' : 'Nicht verfügbar',
 		detail: !info.webAudioSupported
-			? 'Auditive Tests sind ohne Web Audio nicht moeglich'
+			? 'Auditive Tests sind ohne Web Audio nicht möglich'
 			: info.audioLatencyMs !== null
 				? `Latenz: ${info.audioLatencyMs.toFixed(1)} ms`
 				: undefined
@@ -143,12 +143,12 @@ export function evaluateEnvironment(info: EnvironmentInfo): EnvironmentCheck[] {
 
 	// Input devices
 	checks.push({
-		label: 'Eingabegeraete',
+		label: 'Eingabegeräte',
 		status: info.inputDevices.includes('keyboard') || info.inputDevices.includes('touch') ? 'ok' : 'warning',
 		value: info.inputDevices.join(', '),
 		detail: !info.inputDevices.includes('keyboard')
 			? info.inputDevices.includes('touch')
-				? 'Bedienung ueber Bildschirmtasten; Reaktionszeiten per Touch sind mit Tastatur-Normen nur eingeschraenkt vergleichbar'
+				? 'Bedienung über Bildschirmtasten; Reaktionszeiten per Touch sind mit Tastatur-Normen nur eingeschränkt vergleichbar'
 				: 'Einige Tests erfordern eine Tastatur oder einen Touchscreen'
 			: undefined
 	});
@@ -159,7 +159,7 @@ export function evaluateEnvironment(info: EnvironmentInfo): EnvironmentCheck[] {
 		status: ['Chrome', 'Edge', 'Firefox'].includes(info.browserName) ? 'ok' : 'warning',
 		value: `${info.browserName} auf ${info.osName}`,
 		detail: !['Chrome', 'Edge', 'Firefox'].includes(info.browserName)
-			? 'Chrome oder Firefox empfohlen fuer beste Timing-Praezision'
+			? 'Chrome oder Firefox empfohlen für beste Timing-Präzision'
 			: undefined
 	});
 

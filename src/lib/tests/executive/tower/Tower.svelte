@@ -74,7 +74,7 @@
 			} else {
 				ruleViolations++;
 				audio.playError();
-				errorMessage = 'Ungueltiger Zug!';
+				errorMessage = 'Ungültiger Zug!';
 				setTimeout(() => { errorMessage = ''; }, 1000);
 			}
 
@@ -160,11 +160,11 @@
 	function getResultMetrics() {
 		if (!summary) return [];
 		return [
-			{ label: 'Geloest', value: `${summary.problemsSolved}/${summary.totalProblems}`, highlight: true },
-			{ label: 'Ueberzuege', value: summary.excessMoves, highlight: true },
+			{ label: 'Gelöst', value: `${summary.problemsSolved}/${summary.totalProblems}`, highlight: true },
+			{ label: 'Überzüge', value: summary.excessMoves, highlight: true },
 			{ label: 'Planungszeit (Mittel)', value: `${summary.meanPlanningTime.toFixed(0)}`, unit: 'ms' },
-			{ label: 'Ausfuehrungszeit (Mittel)', value: `${summary.meanExecutionTime.toFixed(0)}`, unit: 'ms' },
-			{ label: 'Regelverstoesse', value: summary.ruleViolations }
+			{ label: 'Ausführungszeit (Mittel)', value: `${summary.meanExecutionTime.toFixed(0)}`, unit: 'ms' },
+			{ label: 'Regelverstöße', value: summary.ruleViolations }
 		];
 	}
 
@@ -220,7 +220,7 @@
 										<div
 											class="rounded h-6 transition-all
 												{selectedPeg === pegIdx && discIdx === peg.length - 1
-													? 'ring-2 ring-blue-500 ring-offset-2 scale-110'
+													? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-50 scale-110'
 													: ''}"
 											style="width: {50 + 10}px; background-color: {config.colorHex[disc]};"
 										></div>
@@ -240,7 +240,7 @@
 				{#if selectedPeg !== null}
 					<p class="text-sm text-blue-500 mt-2 px-4 text-center">Klicken bzw. tippen Sie auf den Zielstab</p>
 				{:else}
-					<p class="text-sm text-slate-400 mt-2 px-4 text-center">Klicken bzw. tippen Sie auf einen Stab, um die oberste Scheibe auszuwaehlen</p>
+					<p class="text-sm text-slate-400 mt-2 px-4 text-center">Klicken bzw. tippen Sie auf einen Stab, um die oberste Scheibe auszuwählen</p>
 				{/if}
 			</div>
 		{:else if phase === 'completed' && summary}

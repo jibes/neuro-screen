@@ -17,7 +17,7 @@ export const STROOP_CONFIG = {
 	itiDuration: () => jitteredISI(1000, 400),
 
 	colors: ['rot', 'blau', 'gruen', 'gelb'] as const,
-	words: ['ROT', 'BLAU', 'GRUEN', 'GELB'] as const,
+	words: ['ROT', 'BLAU', 'GRÜN', 'GELB'] as const,
 	neutralWord: 'XXXX',
 
 	keyMap: { 'd': 'rot', 'f': 'blau', 'j': 'gruen', 'k': 'gelb' } as Record<string, string>,
@@ -28,9 +28,9 @@ export const STROOP_CONFIG = {
 	maxPracticeAttempts: 3,
 
 	colorHex: {
-		rot: '#dc2626',
-		blau: '#2563eb',
-		gruen: '#16a34a',
-		gelb: '#ca8a04'
+		rot: 'var(--color-stim-rot)',
+		blau: 'var(--color-stim-blau)',
+		gruen: 'var(--color-stim-gruen)',
+		gelb: 'var(--color-stim-gelb)'
 	} as Record<string, string>
 } as const;

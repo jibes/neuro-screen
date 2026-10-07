@@ -11,9 +11,9 @@ export const TOWER_CONFIG = {
 	pegCapacities: [3, 2, 1] as const,
 	discColors: ['rot', 'blau', 'gruen'] as const,
 	colorHex: {
-		rot: '#dc2626',
-		blau: '#2563eb',
-		gruen: '#16a34a'
+		rot: 'var(--color-stim-rot)',
+		blau: 'var(--color-stim-blau)',
+		gruen: 'var(--color-stim-gruen)'
 	} as Record<string, string>,
 
 	problems: [

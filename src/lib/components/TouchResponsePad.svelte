@@ -33,7 +33,7 @@
 		{#each buttons as button}
 			<button
 				type="button"
-				class="h-20 flex-1 max-w-xs rounded-xl border-2 border-slate-300 bg-white text-lg font-medium text-slate-700 shadow-sm active:scale-95 active:bg-slate-100 transition-transform touch-manipulation {button.class ?? ''}"
+				class="h-20 flex-1 max-w-xs rounded-xl border-2 border-slate-300 bg-surface text-lg font-medium text-slate-700 shadow-sm active:scale-95 active:bg-slate-100 transition-transform touch-manipulation {button.class ?? ''}"
 				onpointerdown={(e) => press(e, button.key)}
 				oncontextmenu={(e) => e.preventDefault()}
 			>
