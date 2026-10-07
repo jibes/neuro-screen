@@ -8,9 +8,10 @@
 	}
 
 	const { onComplete, seconds = COUNTDOWN_SECONDS }: Props = $props();
-	let count = $state(seconds);
+	let count = $state(COUNTDOWN_SECONDS);
 
 	onMount(() => {
+		count = seconds;
 		const interval = setInterval(() => {
 			count--;
 			if (count <= 0) {

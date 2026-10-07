@@ -41,16 +41,17 @@ A browser-based neuropsychological screening platform. Runs 15 standardized cogn
 |------|-----------------|
 | **Word List** | Verbal learning across 5 acquisition trials |
 | **Delayed Recall** | Long-term verbal memory retrieval |
-| **Rey Figure** | Visuoconstructional ability and visual memory |
+| **Rey Figure** | Visual memory (immediate and delayed recognition of figure elements) |
 
 ---
 
 ## Features
 
-- Millisecond-precise stimulus timing and response collection
-- Practice phases with accuracy thresholds before each test
+- Frame-synchronised stimulus onsets and high-resolution response timestamps (`performance.now()` / `event.timeStamp`)
+- Practice phases with feedback (accuracy threshold for the reaction-time tests, unscored practice for Digit Span)
+- Automatic pause (with repetition of the interrupted trial) when the test window loses visibility
 - Trial-by-trial data stored locally via IndexedDB (no server required)
-- Export results as JSON for offline analysis
+- Export results as JSON (session) or CSV (trial level) for offline analysis
 - Environment check to validate browser suitability before testing
 - Fully localized in German
 

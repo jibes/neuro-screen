@@ -23,5 +23,6 @@ export const GO_NOGO_CONFIG = {
 
 	practiceTrials: 10,
 	practiceGoRatio: 0.7,
-	practiceAccuracyThreshold: 0.6
+	practiceAccuracyThreshold: 0.6,
+	maxPracticeAttempts: 3
 } as const;

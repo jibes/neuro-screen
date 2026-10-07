@@ -21,5 +21,6 @@ export const FLANKER_CONFIG = {
 	rightKey: 'ArrowRight',
 
 	practiceTrials: 12,
-	practiceAccuracyThreshold: 0.6
+	practiceAccuracyThreshold: 0.6,
+	maxPracticeAttempts: 3
 } as const;

@@ -13,12 +13,16 @@ export const CPT_CONFIG = {
 	stimulusDuration: 250,
 	fixationDuration: 0,
 	responseWindow: 1000,
-	feedbackDuration: 0,
+	feedbackDuration: 500, // only used for practice feedback
 	itiDuration: () => jitteredISI(750, 200),
 
 	targetLetter: 'X',
 	nonTargetLetters: 'ABCDEFGHIJKLMNOPQRSTUVWYZ'.split(''),
 	responseKey: ' ',
 	blocksCount: 4,
-	trialsPerBlock: 50
+	trialsPerBlock: 50,
+
+	practiceTrials: 20,
+	practiceAccuracyThreshold: 0.6,
+	maxPracticeAttempts: 3
 } as const;

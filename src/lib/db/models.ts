@@ -198,7 +198,6 @@ export interface WordListSummary {
 	totalLearned: number;
 	learningSlope: number;
 	shortDelayFreeRecall: number;
-	longDelayFreeRecall: number;
 	recognitionHits: number;
 	recognitionFalseAlarms: number;
 	dPrimeRecognition: number;
@@ -216,10 +215,17 @@ export interface DelayedRecallSummary {
 
 export interface ReyFigureSummary {
 	type: 'rey-figure';
-	copyScore: number;
-	copyTimeMs: number;
-	recallScore: number;
-	recallTimeMs: number;
+	immediateHits: number;
+	immediateFalseAlarms: number;
+	immediateTargets: number;
+	immediateDistractors: number;
+	immediateDPrime: number;
+	immediateTimeMs: number;
+	delayedHits: number;
+	delayedFalseAlarms: number;
+	delayedTargets: number;
+	delayedDistractors: number;
+	delayedDPrime: number;
+	delayedTimeMs: number;
 	delayMinutes: number;
-	retentionRate: number;
 }

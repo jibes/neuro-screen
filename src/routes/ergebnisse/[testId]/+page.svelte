@@ -5,6 +5,7 @@
 	import { getTestRun, getTrials } from '$lib/db/database.js';
 	import { trialsToCSV, downloadFile } from '$lib/db/export.js';
 	import type { TestRun, TrialData } from '$lib/db/models.js';
+	import { getTestName } from '$lib/tests/registry.js';
 
 	const i = t();
 
@@ -32,7 +33,22 @@
 
 	function getSummaryEntries(): Array<{ label: string; value: string }> {
 		if (!testRun) return [];
-		const s = testRun.summary;
+		try {
+			return formatSummaryEntries(testRun);
+		} catch {
+			// Record from an older app version with a different summary shape: show raw values
+			return genericEntries(testRun.summary as unknown as Record<string, unknown>);
+		}
+	}
+
+	function genericEntries(s: Record<string, unknown>): Array<{ label: string; value: string }> {
+		return Object.entries(s)
+			.filter(([key]) => key !== 'type')
+			.map(([key, value]) => ({ label: key, value: typeof value === 'object' ? JSON.stringify(value) : String(value) }));
+	}
+
+	function formatSummaryEntries(run: TestRun): Array<{ label: string; value: string }> {
+		const s = run.summary;
 		const entries: Array<{ label: string; value: string }> = [];
 
 		switch (s.type) {
@@ -165,10 +181,10 @@
 				entries.push(
 					{ label: 'Lerndurchgaenge', value: `${s.learningTrials}` },
 					{ label: 'Woerter pro Trial', value: s.wordsPerTrial.join(', ') },
-					{ label: 'Gelernt (letzter Trial)', value: `${s.totalLearned} / 15` },
+					{ label: 'Gelernt (letzter Trial)', value: `${s.totalLearned}` },
 					{ label: 'Lernsteigung', value: s.learningSlope.toFixed(2) },
-					{ label: 'Kurzabruf', value: `${s.shortDelayFreeRecall} / 15` },
-					{ label: 'Rekognition Treffer', value: `${s.recognitionHits} / 15` },
+					{ label: 'Kurzabruf', value: `${s.shortDelayFreeRecall}` },
+					{ label: 'Rekognition Treffer', value: `${s.recognitionHits}` },
 					{ label: 'Rekognition Falsche Alarme', value: `${s.recognitionFalseAlarms}` },
 					{ label: "d' Rekognition", value: s.dPrimeRecognition.toFixed(2) }
 				);
@@ -176,7 +192,7 @@
 			case 'delayed-recall':
 				entries.push(
 					{ label: 'Verzoegerter Abruf', value: `${s.delayedRecall} / ${s.totalItems}` },
-					{ label: 'Unmittelbarer Abruf (Trial 5)', value: `${s.immediateRecall} / ${s.totalItems}` },
+					{ label: 'Unmittelbarer Abruf (letzter Lerndurchgang)', value: `${s.immediateRecall} / ${s.totalItems}` },
 					{ label: 'Behaltenrate', value: `${(s.retentionRate * 100).toFixed(0)}%` },
 					{ label: 'Verzoegerung', value: `${s.delayMinutes} min` },
 					{ label: 'Intrusionsfehler', value: `${s.intrusionErrors}` }
@@ -184,20 +200,22 @@
 				break;
 			case 'rey-figure':
 				entries.push(
-					{ label: 'Kopie-Score', value: `${s.copyScore} / 24` },
-					{ label: 'Kopie-Zeit', value: `${(s.copyTimeMs / 1000).toFixed(1)} s` },
-					{ label: 'Abruf-Score', value: `${s.recallScore} / 24` },
-					{ label: 'Abruf-Zeit', value: `${(s.recallTimeMs / 1000).toFixed(1)} s` },
-					{ label: 'Behaltenrate', value: `${(s.retentionRate * 100).toFixed(0)}%` }
+					{ label: "d' sofort", value: s.immediateDPrime.toFixed(2) },
+					{ label: 'Treffer sofort', value: `${s.immediateHits} / ${s.immediateTargets}` },
+					{ label: 'Falsche Alarme sofort', value: `${s.immediateFalseAlarms} / ${s.immediateDistractors}` },
+					{ label: 'Zeit sofort', value: `${(s.immediateTimeMs / 1000).toFixed(1)} s` },
+					{ label: "d' verzoegert", value: s.delayedDPrime.toFixed(2) },
+					{ label: 'Treffer verzoegert', value: `${s.delayedHits} / ${s.delayedTargets}` },
+					{ label: 'Falsche Alarme verzoegert', value: `${s.delayedFalseAlarms} / ${s.delayedDistractors}` },
+					{ label: 'Zeit verzoegert', value: `${(s.delayedTimeMs / 1000).toFixed(1)} s` },
+					{ label: 'Verzoegerung', value: `${s.delayMinutes} min` }
 				);
 				break;
 			default:
-				// Generic fallback: show all properties
-				for (const [key, value] of Object.entries(s)) {
-					if (key !== 'type') {
-						entries.push({ label: key, value: String(value) });
-					}
-				}
+				entries.push(...genericEntries(s as unknown as Record<string, unknown>));
+		}
+		if (entries.some((e) => e.value.includes('undefined') || e.value.includes('NaN'))) {
+			throw new Error('legacy summary');
 		}
 
 		return entries;
@@ -228,8 +246,11 @@
 				<a href="/ergebnisse" class="text-sm text-blue-600 hover:underline mb-2 inline-block">
 					&larr; {i.common.backToOverview}
 				</a>
-				<h1 class="text-2xl font-bold text-slate-900">{testRun.testId}</h1>
+				<h1 class="text-2xl font-bold text-slate-900">{getTestName(testRun.testId)}</h1>
 				<p class="text-sm text-slate-400">{i.results.completedAt}: {formatDate(testRun.completedAt)}</p>
+				{#if testRun.durationMs}
+					<p class="text-sm text-slate-400">{i.results.duration}: {(testRun.durationMs / 1000).toFixed(0)} s</p>
+				{/if}
 			</div>
 			{#if trials.length > 0}
 				<button
@@ -240,6 +261,17 @@
 				</button>
 			{/if}
 		</div>
+
+		{#if testRun.environmentWarnings?.length}
+			<div class="bg-amber-50 border border-amber-200 rounded-lg px-5 py-3 mb-6 text-sm text-amber-800">
+				<p class="font-medium mb-1">Hinweise zur Testumgebung</p>
+				<ul class="list-disc pl-5">
+					{#each testRun.environmentWarnings as warning}
+						<li>{warning}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		<div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 mb-8">
 			{#each getSummaryEntries() as entry}

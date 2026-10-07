@@ -10,8 +10,7 @@ export const WORD_LIST_CONFIG = {
 	learningTrials: 5,
 	wordDisplayDurationMs: 1500,
 	interWordIntervalMs: 500,
-	recallTimeLimitMs: 60000,
-	recognitionTimeoutMs: 5000,
+	recallTimeLimitMs: 60000, // per free-recall phase
 
 	targetWords: [
 		'TROMMEL', 'VORHANG', 'GLOCKE', 'KAFFEE', 'SCHULE',

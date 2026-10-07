@@ -3,7 +3,7 @@ import type { ResponseEvent } from '$lib/core/response-collector.js';
 import type { NBackTrial } from './types.js';
 import type { NBackSummary } from '$lib/db/models.js';
 import { NBACK_CONFIG } from './config.js';
-import { pick } from '$lib/utils/random.js';
+import { pick, shuffled } from '$lib/utils/random.js';
 import { mean, dPrime } from '$lib/utils/statistics.js';
 
 export function generateNBackSequence(
@@ -20,8 +20,7 @@ export function generateNBackSequence(
 		availablePositions.push(i);
 	}
 
-	const shuffled = [...availablePositions].sort(() => Math.random() - 0.5);
-	const targetPositions = new Set(shuffled.slice(0, targetCount));
+	const targetPositions = new Set(shuffled(availablePositions).slice(0, targetCount));
 
 	for (let i = 0; i < nLevel; i++) {
 		trials.push({
@@ -67,7 +66,8 @@ export function generateTrials(
 		itiDuration: NBACK_CONFIG.itiDuration,
 		stimulus,
 		validKeys: [NBACK_CONFIG.responseKey],
-		showFeedback
+		showFeedback,
+		fixedDuration: true
 	}));
 }
 

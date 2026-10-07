@@ -14,9 +14,13 @@ export const NBACK_CONFIG = {
 	stimulusDuration: 500,
 	fixationDuration: 0,
 	responseWindow: 2000,
-	feedbackDuration: 0,
+	feedbackDuration: 500, // only used for practice feedback
 	itiDuration: () => jitteredISI(500, 200),
 
 	letters: 'BCDFGHJKLMNPQRSTVWXYZ'.split(''),
-	responseKey: ' '
+	responseKey: ' ',
+
+	practiceTrials: 15,
+	practiceAccuracyThreshold: 0.6,
+	maxPracticeAttempts: 3
 } as const;

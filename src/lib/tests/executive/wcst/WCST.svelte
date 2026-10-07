@@ -9,11 +9,12 @@
 	import { generateTestCard, getMatchedDimensions, isCorrectMatch, matchesRule, computeSummary } from './logic.js';
 	import type { WCSTCard, WCSTRule, WCSTTrialResult } from './types.js';
 	import type { WCSTSummary } from '$lib/db/models.js';
-	import { saveTestRun } from '$lib/db/database.js';
-	import { waitForSession } from '$lib/db/session-store.svelte.js';
+	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
 	const config = WCST_CONFIG;
+	const nextTest = getNextTest(config.testId);
 
 	let testShell = $state<TestShell>();
 	let summary = $state<WCSTSummary | null>(null);
@@ -32,6 +33,8 @@
 	let consecutiveCorrect = 0;
 	let categoriesCompleted = 0;
 	let trialStartTime = 0;
+	let startedAt = '';
+	let destroyed = false;
 
 	const currentRule = $derived(config.ruleSequence[currentRuleIndex % 3]);
 
@@ -42,7 +45,7 @@
 	}
 
 	async function handleCardClick(refIndex: number) {
-		if (!running || showFeedback || !currentCard) return;
+		if (!running || showFeedback || !currentCard || timer.paused) return;
 
 		const rt = timer.now() - trialStartTime;
 		const correct = isCorrectMatch(currentCard, refIndex, currentRule);
@@ -87,6 +90,7 @@
 		trialNumber++;
 
 		await timer.delay(config.feedbackDurationMs);
+		if (destroyed) return;
 
 		// Check end conditions
 		if (categoriesCompleted >= config.maxCategories || trialNumber >= config.maxTrials) {
@@ -101,32 +105,27 @@
 		try {
 			summary = computeSummary(results);
 
-			const session = await waitForSession();
-			if (session?.id) {
-				await saveTestRun(
-					{
-						sessionId: session.id,
-						testId: config.testId,
-						startedAt: new Date(Date.now() - trialNumber * 2000).toISOString(),
-						completedAt: new Date().toISOString(),
-						durationMs: timer.now(),
-						config: { ...config, referenceCards: undefined },
-						summary,
-						environmentWarnings: []
-					},
-					results.map((r, idx) => ({
-						trialNumber: idx,
-						phase: 'test',
-						stimulus: { testCard: r.testCard, currentRule: r.currentRule },
-						response: { selectedRefIndex: r.selectedRefIndex },
-						rt: r.rt,
-						correct: r.correct,
-						onsetTimestamp: 0,
-						responseTimestamp: r.rt,
-						customData: { isPerseverative: r.isPerseverative, matchedDimensions: r.matchedDimensions }
-					}))
-				);
-			}
+			await saveRunToSession(
+				{
+					testId: config.testId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs: timer.now(),
+					config: { ...config, referenceCards: undefined },
+					summary
+				},
+				results.map((r, idx) => ({
+					trialNumber: idx,
+					phase: 'test',
+					stimulus: { testCard: r.testCard, currentRule: r.currentRule },
+					response: { selectedRefIndex: r.selectedRefIndex },
+					rt: r.rt,
+					correct: r.correct,
+					onsetTimestamp: 0,
+					responseTimestamp: r.rt,
+					customData: { isPerseverative: r.isPerseverative, matchedDimensions: r.matchedDimensions }
+				}))
+			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
 		} finally {
@@ -136,16 +135,9 @@
 
 	function runTest() {
 		running = true;
+		startedAt = new Date().toISOString();
 		timer.reset();
 		nextTrial();
-	}
-
-	function renderCard(card: WCSTCard, size: number = 80): { path: string; color: string; count: number } {
-		return {
-			path: config.shapePaths[card.shape],
-			color: config.colorHex[card.color],
-			count: card.count
-		};
 	}
 
 	function getResultMetrics() {
@@ -163,17 +155,18 @@
 
 	onDestroy(() => {
 		running = false;
+		destroyed = true;
 	});
 </script>
 
 <TestShell
 	bind:this={testShell}
-	testId={config.testId}
 	testName={config.testName}
 	instructions={[...config.instructions]}
 	currentTrial={trialNumber}
 	totalTrials={config.maxTrials}
 	onStart={() => runTest()}
+	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase })}
 		{#if phase === 'running'}
@@ -214,7 +207,7 @@
 				{/if}
 
 				<div class="mt-6 text-sm text-slate-400">
-					Trial {trialNumber + 1} / {config.maxTrials}
+					Trial {Math.min(trialNumber + 1, config.maxTrials)} / {config.maxTrials}
 				</div>
 			</div>
 		{:else if phase === 'completed' && summary}
@@ -222,6 +215,7 @@
 				testName={config.testName}
 				metrics={getResultMetrics()}
 				onOverview={() => goto('/')}
+				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}
 	{/snippet}

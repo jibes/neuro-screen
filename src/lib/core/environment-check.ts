@@ -24,20 +24,25 @@ export interface EnvironmentCheck {
 
 function detectBrowser(): string {
 	const ua = navigator.userAgent;
-	if (ua.includes('Firefox')) return 'Firefox';
-	if (ua.includes('Edg/')) return 'Edge';
-	if (ua.includes('Chrome')) return 'Chrome';
+	if (ua.includes('Firefox') || ua.includes('FxiOS')) return 'Firefox';
+	if (ua.includes('Edg/') || ua.includes('EdgiOS') || ua.includes('EdgA/')) return 'Edge';
+	if (ua.includes('OPR/')) return 'Opera';
+	if (ua.includes('Chrome') || ua.includes('CriOS')) return 'Chrome';
 	if (ua.includes('Safari')) return 'Safari';
 	return 'Unbekannt';
 }
 
 function detectOS(): string {
 	const ua = navigator.userAgent;
-	if (ua.includes('Mac')) return 'macOS';
-	if (ua.includes('Windows')) return 'Windows';
-	if (ua.includes('Linux')) return 'Linux';
+	// Order matters: iOS UAs contain "Mac OS X", Android UAs contain "Linux"
+	if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+	// iPadOS 13+ reports a desktop Mac UA but has touch support
+	if (ua.includes('Mac') && navigator.maxTouchPoints > 1) return 'iOS';
 	if (ua.includes('Android')) return 'Android';
-	if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+	if (ua.includes('Windows')) return 'Windows';
+	if (ua.includes('Mac')) return 'macOS';
+	if (ua.includes('CrOS')) return 'ChromeOS';
+	if (ua.includes('Linux')) return 'Linux';
 	return 'Unbekannt';
 }
 

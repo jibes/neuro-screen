@@ -1,11 +1,12 @@
 <script lang="ts">
 	interface Props {
+		/** Number of completed items */
 		current: number;
 		total: number;
 	}
 
 	let { current, total }: Props = $props();
-	let progress = $derived(total > 0 ? ((current + 1) / total) * 100 : 0);
+	let progress = $derived(total > 0 ? (Math.min(current, total) / total) * 100 : 0);
 </script>
 
 <div class="fixed bottom-0 left-0 right-0 h-1 bg-slate-200">

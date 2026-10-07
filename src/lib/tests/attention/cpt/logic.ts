@@ -40,7 +40,8 @@ export function generateTrials(
 			itiDuration: CPT_CONFIG.itiDuration,
 			stimulus,
 			validKeys: [CPT_CONFIG.responseKey],
-			showFeedback
+			showFeedback,
+			fixedDuration: true
 		};
 	});
 }

@@ -74,10 +74,10 @@ export const de = {
 			name: 'Zahlenspanne',
 			shortDesc: 'Auditives Arbeitsgedaechtnis',
 			instructions: [
-				'Sie hoeren eine Folge von Zahlen.',
-				'Geben Sie die Zahlen anschliessend in der gleichen Reihenfolge ein.',
-				'Die Folgen werden schrittweise laenger.',
-				'Der Test endet, wenn Sie zwei Folgen gleicher Laenge hintereinander falsch wiedergeben.'
+				'Sie sehen nacheinander einzelne Zahlen auf dem Bildschirm (jeweils von einem Ton begleitet).',
+				'Geben Sie die Zahlen anschliessend in der gleichen Reihenfolge ein und bestaetigen Sie mit Enter.',
+				'Zu Beginn gibt es zwei Uebungsdurchgaenge. Danach werden die Folgen schrittweise laenger.',
+				'Der Test endet, wenn Sie beide Folgen einer Laenge falsch wiedergeben.'
 			]
 		},
 		stroop: {
@@ -95,7 +95,7 @@ export const de = {
 			shortDesc: 'Arbeitsgedaechtnis-Aktualisierung',
 			instructions: [
 				'Sie sehen nacheinander Buchstaben auf dem Bildschirm.',
-				'Druecken Sie die LEERTASTE, wenn der aktuelle Buchstabe mit dem Buchstaben vor N Positionen uebereinstimmt.',
+				'Druecken Sie die LEERTASTE, wenn der aktuelle Buchstabe mit dem Buchstaben von vor 2 Positionen uebereinstimmt (2-Back).',
 				'Druecken Sie KEINE Taste, wenn es keine Uebereinstimmung gibt.'
 			]
 		},
@@ -162,7 +162,7 @@ export const de = {
 			shortDesc: 'Planung und Problemloesung',
 			instructions: [
 				'Sie sehen farbige Scheiben auf drei Staeben.',
-				'Verschieben Sie die Scheiben per Drag-and-Drop, um den Zielzustand zu erreichen.',
+				'Klicken Sie zuerst auf einen Stab, um die oberste Scheibe auszuwaehlen, und dann auf den Zielstab.',
 				'Es darf nur eine Scheibe gleichzeitig bewegt werden.',
 				'Versuchen Sie, die Aufgabe in moeglichst wenigen Zuegen zu loesen.'
 			]
@@ -181,19 +181,19 @@ export const de = {
 			name: 'Wortliste',
 			shortDesc: 'Verbales Lernen und Gedaechtnis',
 			instructions: [
-				'Sie hoeren eine Liste von 15 Woertern.',
-				'Nach der Praesentation nennen Sie so viele Woerter wie moeglich.',
-				'Dieser Vorgang wird 5 Mal wiederholt.',
-				'Spaeter wird ein verzoegerter Abruf erfolgen.'
+				'Sie sehen nacheinander eine Liste von 15 Woertern.',
+				'Geben Sie nach der Praesentation so viele Woerter wie moeglich ein (Reihenfolge egal).',
+				'Dieser Vorgang wird 5 Mal wiederholt. Danach folgen eine zweite Liste, ein Abruf der ersten Liste und eine Wiedererkennung.',
+				'Fuehren Sie etwa 20–30 Minuten spaeter den Test "Verzoegerter Abruf" durch.'
 			]
 		},
 		reyFigure: {
 			name: 'Rey-Figur',
-			shortDesc: 'Visuokonstruktion und visuelles Gedaechtnis',
+			shortDesc: 'Visuelles Gedaechtnis (Wiedererkennung)',
 			instructions: [
-				'Sie sehen eine komplexe geometrische Figur.',
-				'Kopieren Sie die Figur moeglichst genau.',
-				'Spaeter werden Sie gebeten, die Figur aus dem Gedaechtnis zu zeichnen.'
+				'Sie sehen 30 Sekunden lang eine komplexe geometrische Figur. Praegen Sie sich die Figur genau ein.',
+				'Anschliessend werden Ihnen einzelne Elemente gezeigt. Entscheiden Sie jeweils, ob das Element in der Figur enthalten war.',
+				'Nach einer kurzen Pause folgen weitere Elemente, ebenfalls aus dem Gedaechtnis zu beurteilen.'
 			]
 		}
 	},

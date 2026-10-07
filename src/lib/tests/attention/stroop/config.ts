@@ -23,6 +23,10 @@ export const STROOP_CONFIG = {
 	keyMap: { 'd': 'rot', 'f': 'blau', 'j': 'gruen', 'k': 'gelb' } as Record<string, string>,
 	responseKeys: ['d', 'f', 'j', 'k'],
 
+	practiceTrials: 12,
+	practiceAccuracyThreshold: 0.6,
+	maxPracticeAttempts: 3,
+
 	colorHex: {
 		rot: '#dc2626',
 		blau: '#2563eb',

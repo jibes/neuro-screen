@@ -10,11 +10,12 @@
 	import { getNodes, getExpectedSequence, computeSummary } from './logic.js';
 	import type { TrailMakingResult } from './types.js';
 	import type { TrailMakingSummary } from '$lib/db/models.js';
-	import { saveTestRun } from '$lib/db/database.js';
-	import { waitForSession } from '$lib/db/session-store.svelte.js';
+	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
 	const config = TRAIL_A_CONFIG;
+	const nextTest = getNextTest(config.testId);
 	const nodes = getNodes();
 	const expectedSequence = getExpectedSequence();
 
@@ -32,20 +33,20 @@
 	const audio = new AudioEngine();
 	let startTime = 0;
 	let lastClickTime = 0;
+	let startedAt = '';
 	const segmentTimes: number[] = [];
 	const clickLog: TrailMakingResult['clickLog'] = [];
 	let intervalId: ReturnType<typeof setInterval> | undefined;
 
 	function handleNodeClick(nodeId: number) {
-		if (!running) return;
+		if (!running || timer.paused) return;
 
 		const now = timer.now();
 		const expectedId = expectedSequence[nextExpectedIndex];
 
 		if (nodeId === expectedId) {
-			if (lastClickTime > 0) {
-				segmentTimes.push(now - lastClickTime);
-			}
+			// First segment = start → first node, so there is one segment per node
+			segmentTimes.push(now - lastClickTime);
 			lastClickTime = now;
 			completedPath = [...completedPath, nodeId];
 			clickLog.push({ clickedId: nodeId, expectedId, correct: true, timestamp: now });
@@ -80,33 +81,27 @@
 		try {
 			summary = computeSummary(result);
 
-			const session = await waitForSession();
-			const startedAt = new Date(Date.now() - completionTimeMs).toISOString();
-			if (session?.id) {
-				await saveTestRun(
-					{
-						sessionId: session.id,
-						testId: config.testId,
-						startedAt,
-						completedAt: new Date().toISOString(),
-						durationMs: completionTimeMs,
-						config: { ...config, nodePositions: undefined },
-						summary,
-						environmentWarnings: []
-					},
-					clickLog.map((cl, idx) => ({
-						trialNumber: idx,
-						phase: 'test',
-						stimulus: { expectedId: cl.expectedId },
-						response: { clickedId: cl.clickedId },
-						rt: cl.timestamp - startTime,
-						correct: cl.correct,
-						onsetTimestamp: startTime,
-						responseTimestamp: cl.timestamp,
-						customData: {}
-					}))
-				);
-			}
+			await saveRunToSession(
+				{
+					testId: config.testId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs: completionTimeMs,
+					config: { ...config, nodePositions: undefined },
+					summary
+				},
+				clickLog.map((cl, idx) => ({
+					trialNumber: idx,
+					phase: 'test',
+					stimulus: { expectedId: cl.expectedId },
+					response: { clickedId: cl.clickedId },
+					rt: cl.timestamp - startTime,
+					correct: cl.correct,
+					onsetTimestamp: startTime,
+					responseTimestamp: cl.timestamp,
+					customData: {}
+				}))
+			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
 		} finally {
@@ -116,6 +111,7 @@
 
 	function runTest() {
 		running = true;
+		startedAt = new Date().toISOString();
 		audio.init();
 		timer.reset();
 		startTime = timer.now();
@@ -150,12 +146,12 @@
 
 <TestShell
 	bind:this={testShell}
-	testId={config.testId}
 	testName={config.testName}
 	instructions={[...config.instructions]}
 	currentTrial={nextExpectedIndex}
 	totalTrials={expectedSequence.length}
 	onStart={() => runTest()}
+	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase })}
 		{#if phase === 'running'}
@@ -209,6 +205,7 @@
 				testName={config.testName}
 				metrics={getResultMetrics()}
 				onOverview={() => goto('/')}
+				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}
 	{/snippet}

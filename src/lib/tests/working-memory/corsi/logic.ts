@@ -1,19 +1,13 @@
-import { randomInt } from '$lib/utils/random.js';
+import { shuffled } from '$lib/utils/random.js';
 import type { CorsiTrial, CorsiResult } from './types.js';
 import type { CorsiSummary } from '$lib/db/models.js';
 import { CORSI_CONFIG } from './config.js';
 import { mean } from '$lib/utils/statistics.js';
 
-export function generateSequence(length: number, blockCount: number = 9): number[] {
-	const seq: number[] = [];
-	for (let i = 0; i < length; i++) {
-		let block: number;
-		do {
-			block = randomInt(0, blockCount - 1);
-		} while (seq.length > 0 && block === seq[seq.length - 1]);
-		seq.push(block);
-	}
-	return seq;
+/** Random sequence of distinct blocks (no block is shown twice, as in the original Corsi task) */
+export function generateSequence(length: number, blockCount: number = CORSI_CONFIG.blockPositions.length): number[] {
+	const blocks = Array.from({ length: blockCount }, (_, i) => i);
+	return shuffled(blocks).slice(0, Math.min(length, blockCount));
 }
 
 export function generateForwardTrials(): CorsiTrial[] {

@@ -10,11 +10,12 @@
 	import { cloneState, isValidMove, applyMove, isGoalReached, computeSummary } from './logic.js';
 	import type { TowerState, TowerProblemResult, DiscColor } from './types.js';
 	import type { TowerSummary } from '$lib/db/models.js';
-	import { saveTestRun } from '$lib/db/database.js';
-	import { waitForSession } from '$lib/db/session-store.svelte.js';
+	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
 	const config = TOWER_CONFIG;
+	const nextTest = getNextTest(config.testId);
 
 	let testShell = $state<TestShell>();
 	let summary = $state<TowerSummary | null>(null);
@@ -33,13 +34,14 @@
 	const results: TowerProblemResult[] = [];
 	let problemStartTime = 0;
 	let firstMoveTime = 0;
+	let startedAt = '';
 
 	const currentProblem = $derived(
 		currentProblemIndex < config.problems.length ? config.problems[currentProblemIndex] : null
 	);
 
 	function handlePegClick(pegIndex: number) {
-		if (!running || !currentProblem) return;
+		if (!running || !currentProblem || timer.paused) return;
 
 		if (selectedPeg === null) {
 			// Select peg (only if it has discs)
@@ -118,32 +120,27 @@
 		try {
 			summary = computeSummary(results);
 
-			const session = await waitForSession();
-			if (session?.id) {
-				await saveTestRun(
-					{
-						sessionId: session.id,
-						testId: config.testId,
-						startedAt: new Date(Date.now() - timer.now()).toISOString(),
-						completedAt: new Date().toISOString(),
-						durationMs: timer.now(),
-						config: { ...config, problems: undefined },
-						summary,
-						environmentWarnings: []
-					},
-					results.map((r, idx) => ({
-						trialNumber: idx,
-						phase: 'test',
-						stimulus: { problemId: r.problem.id, optimalMoves: r.problem.optimalMoves },
-						response: { moves: r.moves, solved: r.solved },
-						rt: r.planningTimeMs + r.executionTimeMs,
-						correct: r.solved,
-						onsetTimestamp: 0,
-						responseTimestamp: r.planningTimeMs + r.executionTimeMs,
-						customData: { planningTime: r.planningTimeMs, ruleViolations: r.ruleViolations }
-					}))
-				);
-			}
+			await saveRunToSession(
+				{
+					testId: config.testId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs: timer.now(),
+					config: { ...config, problems: undefined },
+					summary
+				},
+				results.map((r, idx) => ({
+					trialNumber: idx,
+					phase: 'test',
+					stimulus: { problemId: r.problem.id, optimalMoves: r.problem.optimalMoves },
+					response: { moves: r.moves, solved: r.solved },
+					rt: r.planningTimeMs + r.executionTimeMs,
+					correct: r.solved,
+					onsetTimestamp: 0,
+					responseTimestamp: r.planningTimeMs + r.executionTimeMs,
+					customData: { planningTime: r.planningTimeMs, ruleViolations: r.ruleViolations }
+				}))
+			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
 		} finally {
@@ -153,6 +150,7 @@
 
 	function runTest() {
 		running = true;
+		startedAt = new Date().toISOString();
 		audio.init();
 		timer.reset();
 		startProblem();
@@ -177,12 +175,12 @@
 
 <TestShell
 	bind:this={testShell}
-	testId={config.testId}
 	testName={config.testName}
 	instructions={[...config.instructions]}
 	currentTrial={currentProblemIndex}
 	totalTrials={config.problems.length}
 	onStart={() => runTest()}
+	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase })}
 		{#if phase === 'running' && currentProblem}
@@ -249,6 +247,7 @@
 				testName={config.testName}
 				metrics={getResultMetrics()}
 				onOverview={() => goto('/')}
+				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}
 	{/snippet}

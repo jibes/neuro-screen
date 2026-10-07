@@ -11,14 +11,16 @@
 	import type { GoNoGoTrial } from './types.js';
 	import type { GoNoGoSummary } from '$lib/db/models.js';
 	import type { TrialConfig } from '$lib/core/trial-runner.svelte.js';
-	import { saveTestRun } from '$lib/db/database.js';
-	import { waitForSession } from '$lib/db/session-store.svelte.js';
+	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
 	const config = GO_NOGO_CONFIG;
+	const nextTest = getNextTest(config.testId);
 
 	const runner = createTrialRunner();
 	let testShell = $state<TestShell>();
+	let stage = $state<'practice' | 'transition' | 'test'>('practice');
 	let summary = $state<GoNoGoSummary | null>(null);
 	let testTrials = $state<TrialConfig<GoNoGoTrial>[]>([]);
 
@@ -29,40 +31,50 @@
 	}
 
 	async function runTest() {
+		// Practice block with feedback; repeated until the accuracy threshold is met (max attempts)
+		stage = 'practice';
+		for (let attempt = 0; attempt < config.maxPracticeAttempts; attempt++) {
+			const practice = await runner.run(generateTrials(config.practiceTrials, config.practiceGoRatio, true), evaluateResponse);
+			if (!practice) return;
+			const accuracy = practice.filter((r) => r.correct).length / practice.length;
+			if (accuracy >= config.practiceAccuracyThreshold) break;
+		}
+		stage = 'transition';
+		await runner.timer.delay(3000);
+		if (runner.destroyed) return;
+		stage = 'test';
+
 		testTrials = generateTrials(config.totalTrials, config.goRatio, false);
 		const startedAt = new Date().toISOString();
 
 		const results = await runner.run(testTrials, evaluateResponse);
+		if (!results) return; // aborted (page left) — never save partial runs
+		const durationMs = runner.timer.now();
 
 		try {
 			summary = computeSummary(results, testTrials);
 
-			const session = await waitForSession();
-			if (session?.id) {
-				await saveTestRun(
-					{
-						sessionId: session.id,
-						testId: config.testId,
-						startedAt,
-						completedAt: new Date().toISOString(),
-						durationMs: results.reduce((sum, r) => sum + (r.rt ?? 0), 0),
-						config: { ...config, itiDuration: undefined },
-						summary,
-						environmentWarnings: []
-					},
-					results.map((r, idx) => ({
-						trialNumber: idx,
-						phase: 'test',
-						stimulus: testTrials[idx].stimulus as unknown as Record<string, unknown>,
-						response: { key: r.responseKey },
-						rt: r.rt,
-						correct: r.correct,
-						onsetTimestamp: r.stimulusOnset,
-						responseTimestamp: r.responseTimestamp,
-						customData: r.customData ?? {}
-					}))
-				);
-			}
+			await saveRunToSession(
+				{
+					testId: config.testId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs,
+					config: { ...config, itiDuration: undefined },
+					summary
+				},
+				results.map((r, idx) => ({
+					trialNumber: idx,
+					phase: 'test',
+					stimulus: testTrials[idx].stimulus as unknown as Record<string, unknown>,
+					response: { key: r.responseKey },
+					rt: r.rt,
+					correct: r.correct,
+					onsetTimestamp: r.stimulusOnset,
+					responseTimestamp: r.responseTimestamp,
+					customData: r.customData ?? {}
+				}))
+			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
 		} finally {
@@ -90,15 +102,22 @@
 
 <TestShell
 	bind:this={testShell}
-	testId={config.testId}
 	testName={config.testName}
 	instructions={[...config.instructions]}
 	currentTrial={runner.currentTrial}
 	totalTrials={runner.totalTrials}
 	onStart={handleStart}
+	onPauseChange={(p) => (p ? runner.pause() : runner.resume())}
 >
 	{#snippet children({ phase })}
-		{#if phase === 'running'}
+		{#if phase === 'running' && stage === 'transition'}
+			<div class="stimulus-area">
+				<p class="text-xl text-slate-600">{i.common.practiceComplete}</p>
+			</div>
+		{:else if phase === 'running'}
+			{#if stage === 'practice'}
+				<div class="fixed top-4 left-4 text-sm font-medium text-amber-600">{i.common.practice}</div>
+			{/if}
 			{#if runner.phase === 'fixation' || runner.phase === 'iti'}
 				<FixationCross />
 			{:else if runner.phase === 'stimulus' && currentStimulus}
@@ -122,6 +141,7 @@
 				testName={config.testName}
 				metrics={getResultMetrics()}
 				onOverview={() => goto('/')}
+				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}
 	{/snippet}

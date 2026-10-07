@@ -12,7 +12,7 @@ export const DIGIT_SPAN_CONFIG = {
 	attemptsPerSpan: 2,
 	digitDisplayDurationMs: 1000,
 	interDigitIntervalMs: 300,
-	maxConsecutiveFailures: 2, // stop after 2 failures at same span
+	maxFailuresPerSpan: 2, // stop after 2 failures at the same span
 
 	practiceSpan: 3,
 	practiceTrials: 2

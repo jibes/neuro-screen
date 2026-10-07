@@ -49,7 +49,9 @@ export class AudioEngine {
 	 * @param type Oscillator waveform type
 	 */
 	playTone(frequency: number, duration: number, type: OscillatorType = 'sine'): void {
-		const ctx = this.ensureContext();
+		// Silently skip when not (or no longer) initialized, e.g. after component teardown
+		const ctx = this.context;
+		if (!ctx) return;
 		const oscillator = ctx.createOscillator();
 		const gainNode = ctx.createGain();
 
@@ -60,9 +62,10 @@ export class AudioEngine {
 
 		// Smooth envelope to avoid clicks
 		const now = ctx.currentTime;
+		const ramp = Math.min(0.01, duration / 2);
 		gainNode.gain.setValueAtTime(0, now);
-		gainNode.gain.linearRampToValueAtTime(0.5, now + 0.01);
-		gainNode.gain.setValueAtTime(0.5, now + duration - 0.01);
+		gainNode.gain.linearRampToValueAtTime(0.5, now + ramp);
+		gainNode.gain.setValueAtTime(0.5, now + duration - ramp);
 		gainNode.gain.linearRampToValueAtTime(0, now + duration);
 
 		oscillator.start(now);

@@ -1,62 +1,10 @@
 <script lang="ts">
 	import { t } from '$lib/i18n/index.js';
+	import { TEST_CATEGORIES } from '$lib/tests/registry.js';
+	import { isTestCompleted } from '$lib/db/session-store.svelte.js';
 
 	const i = t();
-
-	interface TestInfo {
-		id: string;
-		name: string;
-		shortDesc: string;
-		href: string;
-	}
-
-	interface Category {
-		name: string;
-		tests: TestInfo[];
-	}
-
-	const categories: Category[] = [
-		{
-			name: i.categories.attention,
-			tests: [
-				{ id: 'go-nogo', name: i.tests.goNogo.name, shortDesc: i.tests.goNogo.shortDesc, href: '/tests/go-nogo' },
-				{ id: 'flanker', name: i.tests.flanker.name, shortDesc: i.tests.flanker.shortDesc, href: '/tests/flanker' },
-				{ id: 'stroop', name: i.tests.stroop.name, shortDesc: i.tests.stroop.shortDesc, href: '/tests/stroop' },
-				{ id: 'cpt', name: i.tests.cpt.name, shortDesc: i.tests.cpt.shortDesc, href: '/tests/cpt' }
-			]
-		},
-		{
-			name: i.categories.workingMemory,
-			tests: [
-				{ id: 'n-back', name: i.tests.nBack.name, shortDesc: i.tests.nBack.shortDesc, href: '/tests/n-back' },
-				{ id: 'digit-span', name: i.tests.digitSpan.name, shortDesc: i.tests.digitSpan.shortDesc, href: '/tests/digit-span' },
-				{ id: 'corsi', name: i.tests.corsi.name, shortDesc: i.tests.corsi.shortDesc, href: '/tests/corsi' }
-			]
-		},
-		{
-			name: i.categories.processingSpeed,
-			tests: [
-				{ id: 'symbol-digit', name: i.tests.symbolDigit.name, shortDesc: i.tests.symbolDigit.shortDesc, href: '/tests/symbol-digit' },
-				{ id: 'trail-making-a', name: i.tests.trailMakingA.name, shortDesc: i.tests.trailMakingA.shortDesc, href: '/tests/trail-making-a' },
-				{ id: 'trail-making-b', name: i.tests.trailMakingB.name, shortDesc: i.tests.trailMakingB.shortDesc, href: '/tests/trail-making-b' }
-			]
-		},
-		{
-			name: i.categories.executive,
-			tests: [
-				{ id: 'wcst', name: i.tests.wcst.name, shortDesc: i.tests.wcst.shortDesc, href: '/tests/wcst' },
-				{ id: 'tower', name: i.tests.tower.name, shortDesc: i.tests.tower.shortDesc, href: '/tests/tower' }
-			]
-		},
-		{
-			name: i.categories.memory,
-			tests: [
-				{ id: 'word-list', name: i.tests.wordList.name, shortDesc: i.tests.wordList.shortDesc, href: '/tests/word-list' },
-				{ id: 'delayed-recall', name: i.tests.delayedRecall.name, shortDesc: i.tests.delayedRecall.shortDesc, href: '/tests/delayed-recall' },
-				{ id: 'rey-figure', name: i.tests.reyFigure.name, shortDesc: i.tests.reyFigure.shortDesc, href: '/tests/rey-figure' }
-			]
-		}
-	];
+	const categories = TEST_CATEGORIES;
 </script>
 
 <div class="max-w-5xl mx-auto px-6 py-10">
@@ -83,7 +31,12 @@
 						href={test.href}
 						class="block bg-white rounded-lg border border-slate-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all"
 					>
-						<h3 class="font-medium text-slate-900 mb-1">{test.name}</h3>
+						<div class="flex items-start justify-between gap-2 mb-1">
+							<h3 class="font-medium text-slate-900">{test.name}</h3>
+							{#if isTestCompleted(test.id)}
+								<span class="text-xs text-green-600 whitespace-nowrap">&#10003; durchgefuehrt</span>
+							{/if}
+						</div>
 						<p class="text-sm text-slate-500">{test.shortDesc}</p>
 					</a>
 				{/each}

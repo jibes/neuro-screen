@@ -9,7 +9,6 @@
 	export type TestPhase = 'instructions' | 'countdown' | 'running' | 'completed';
 
 	interface Props {
-		testId: string;
 		testName: string;
 		instructions: string[];
 		children: Snippet<[{ phase: TestPhase }]>;
@@ -17,25 +16,28 @@
 		totalTrials?: number;
 		useFullscreen?: boolean;
 		onStart?: () => void;
+		/** Called when the test is paused (window/tab left) or resumed; tests must freeze their timing */
+		onPauseChange?: (paused: boolean) => void;
 	}
 
 	let {
-		testId,
 		testName,
 		instructions,
 		children,
 		currentTrial = 0,
 		totalTrials = 0,
 		useFullscreen = true,
-		onStart
+		onStart,
+		onPauseChange
 	}: Props = $props();
 
 	let phase = $state<TestPhase>('instructions');
 	let paused = $state(false);
 
 	function onVisibilityChange() {
-		if (document.hidden && phase === 'running') {
+		if (document.hidden && phase === 'running' && !paused) {
 			paused = true;
+			onPauseChange?.(true);
 		}
 	}
 
@@ -45,7 +47,7 @@
 
 	onDestroy(() => {
 		document.removeEventListener('visibilitychange', onVisibilityChange);
-		exitFullscreen();
+		exitFullscreen().catch(() => {});
 	});
 
 	function onInstructionsComplete() {
@@ -62,9 +64,14 @@
 
 	function resumeFromPause() {
 		paused = false;
+		onPauseChange?.(false);
 	}
 
 	export function setPhase(newPhase: TestPhase) {
+		if (newPhase !== 'running' && paused) {
+			paused = false;
+			onPauseChange?.(false);
+		}
 		phase = newPhase;
 	}
 </script>

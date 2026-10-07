@@ -1,6 +1,5 @@
 import type { RecallResult, RecognitionItem } from './types.js';
 import type { WordListSummary } from '$lib/db/models.js';
-import { WORD_LIST_CONFIG } from './config.js';
 import { dPrime } from '$lib/utils/statistics.js';
 
 export function scoreRecall(
@@ -61,7 +60,6 @@ export function computeSummary(
 		totalLearned,
 		learningSlope: computeLearningSlope(wordsPerTrial),
 		shortDelayFreeRecall: shortDelayResult?.correctCount ?? 0,
-		longDelayFreeRecall: 0,
 		recognitionHits: recogHits,
 		recognitionFalseAlarms: recogFA,
 		dPrimeRecognition: totalTargets > 0 ? dPrime(recogHits, totalTargets, recogFA, totalDistractors) : 0

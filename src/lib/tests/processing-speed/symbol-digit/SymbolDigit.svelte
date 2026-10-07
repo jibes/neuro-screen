@@ -9,61 +9,65 @@
 	import { generateTrialPool, computeSummary } from './logic.js';
 	import type { SymbolDigitResult } from './types.js';
 	import type { SymbolDigitSummary } from '$lib/db/models.js';
-	import { saveTestRun } from '$lib/db/database.js';
-	import { waitForSession } from '$lib/db/session-store.svelte.js';
+	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
 	const config = SYMBOL_DIGIT_CONFIG;
+	const nextTest = getNextTest(config.testId);
 
 	let testShell = $state<TestShell>();
 	let summary = $state<SymbolDigitSummary | null>(null);
 
 	let currentTrialIndex = $state(0);
-	let remainingSeconds = $state(90);
+	let remainingSeconds = $state(Math.ceil(config.timeLimitMs / 1000));
 	let flashColor = $state<'green' | 'red' | null>(null);
 	let running = $state(false);
+	let answeredCount = $state(0);
 
 	const timer = new HighResTimer();
+	// Grown on demand so fast responders never run out of items
 	const trials = generateTrialPool(config.trialPoolSize);
 	const results: SymbolDigitResult[] = [];
 	let intervalId: ReturnType<typeof setInterval> | undefined;
 	let trialStartTime = 0;
+	let startedAt = '';
+	let finished = false;
 
-	const currentSymbol = $derived(
-		currentTrialIndex < trials.length
-			? config.symbols[trials[currentTrialIndex].symbolIndex]
-			: ''
-	);
+	// `trials` is extended before currentTrialIndex advances, so the index change triggers the update
+	const currentSymbol = $derived(config.symbols[trials[currentTrialIndex].symbolIndex]);
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (!running) return;
+		if (!running || e.repeat || timer.paused) return;
 		if (e.key >= '1' && e.key <= '9') {
 			e.preventDefault();
+			if (timer.now() >= config.timeLimitMs) {
+				finishTest();
+				return;
+			}
 			const digit = Number(e.key);
 			const trial = trials[currentTrialIndex];
 			const rt = timer.now() - trialStartTime;
 			const correct = digit === trial.correctDigit;
 
 			results.push({ trial, userResponse: digit, correct, rt });
+			answeredCount = results.length;
 
 			// Flash feedback
 			flashColor = correct ? 'green' : 'red';
 			setTimeout(() => { flashColor = null; }, 150);
 
+			if (currentTrialIndex + 2 >= trials.length) {
+				trials.push(...generateTrialPool(config.trialPoolSize, trials));
+			}
 			currentTrialIndex++;
 			trialStartTime = timer.now();
-
-			// Check if time is up
-			if (timer.now() >= config.timeLimitMs) {
-				finishTest();
-			}
 		}
 	}
 
 	function startTimer() {
-		const startTime = timer.now();
 		intervalId = setInterval(() => {
-			const elapsed = timer.now() - startTime;
+			const elapsed = timer.now();
 			remainingSeconds = Math.max(0, Math.ceil((config.timeLimitMs - elapsed) / 1000));
 			if (elapsed >= config.timeLimitMs) {
 				finishTest();
@@ -72,6 +76,8 @@
 	}
 
 	async function finishTest() {
+		if (finished) return;
+		finished = true;
 		running = false;
 		if (intervalId !== undefined) {
 			clearInterval(intervalId);
@@ -81,33 +87,27 @@
 		try {
 			summary = computeSummary(results);
 
-			const session = await waitForSession();
-			const startedAt = new Date(Date.now() - config.timeLimitMs).toISOString();
-			if (session?.id) {
-				await saveTestRun(
-					{
-						sessionId: session.id,
-						testId: config.testId,
-						startedAt,
-						completedAt: new Date().toISOString(),
-						durationMs: config.timeLimitMs,
-						config: { ...config },
-						summary,
-						environmentWarnings: []
-					},
-					results.map((r, idx) => ({
-						trialNumber: idx,
-						phase: 'test',
-						stimulus: { symbolIndex: r.trial.symbolIndex, correctDigit: r.trial.correctDigit },
-						response: { digit: r.userResponse },
-						rt: r.rt,
-						correct: r.correct,
-						onsetTimestamp: 0,
-						responseTimestamp: r.rt,
-						customData: {}
-					}))
-				);
-			}
+			await saveRunToSession(
+				{
+					testId: config.testId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs: config.timeLimitMs,
+					config: { ...config },
+					summary
+				},
+				results.map((r, idx) => ({
+					trialNumber: idx,
+					phase: 'test',
+					stimulus: { symbolIndex: r.trial.symbolIndex, correctDigit: r.trial.correctDigit },
+					response: { digit: r.userResponse },
+					rt: r.rt,
+					correct: r.correct,
+					onsetTimestamp: 0,
+					responseTimestamp: r.rt,
+					customData: {}
+				}))
+			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
 		} finally {
@@ -117,6 +117,7 @@
 
 	function runTest() {
 		running = true;
+		startedAt = new Date().toISOString();
 		timer.reset();
 		trialStartTime = timer.now();
 		startTimer();
@@ -139,6 +140,7 @@
 
 	onDestroy(() => {
 		running = false;
+		finished = true;
 		if (intervalId !== undefined) clearInterval(intervalId);
 		document.removeEventListener('keydown', handleKeydown);
 	});
@@ -146,12 +148,12 @@
 
 <TestShell
 	bind:this={testShell}
-	testId={config.testId}
 	testName={config.testName}
 	instructions={[...config.instructions]}
 	currentTrial={currentTrialIndex}
 	totalTrials={0}
 	onStart={() => runTest()}
+	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase })}
 		{#if phase === 'running'}
@@ -183,7 +185,7 @@
 
 				<!-- Counter -->
 				<div class="mt-2 text-sm text-slate-400">
-					{results.length} beantwortet
+					{answeredCount} beantwortet
 				</div>
 			</div>
 		{:else if phase === 'completed' && summary}
@@ -191,6 +193,7 @@
 				testName={config.testName}
 				metrics={getResultMetrics()}
 				onOverview={() => goto('/')}
+				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}
 	{/snippet}

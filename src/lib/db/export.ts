@@ -14,6 +14,13 @@ export async function exportSessionJSON(sessionId: number): Promise<string> {
 	return JSON.stringify(data, null, 2);
 }
 
+/** Quote a CSV field if needed (RFC 4180) */
+function csvField(value: unknown): string {
+	if (value === null || value === undefined) return '';
+	const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
+	return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
 /** Export trial-level data for a test run as CSV */
 export function trialsToCSV(trials: TrialData[]): string {
 	if (trials.length === 0) return '';
@@ -24,7 +31,10 @@ export function trialsToCSV(trials: TrialData[]): string {
 		'rt',
 		'correct',
 		'onsetTimestamp',
-		'responseTimestamp'
+		'responseTimestamp',
+		'stimulus',
+		'response',
+		'customData'
 	];
 
 	const rows = trials.map((t) =>
@@ -34,8 +44,13 @@ export function trialsToCSV(trials: TrialData[]): string {
 			t.rt !== null ? t.rt.toFixed(2) : '',
 			t.correct !== null ? (t.correct ? '1' : '0') : '',
 			t.onsetTimestamp.toFixed(2),
-			t.responseTimestamp !== null ? t.responseTimestamp.toFixed(2) : ''
-		].join(',')
+			t.responseTimestamp !== null ? t.responseTimestamp.toFixed(2) : '',
+			t.stimulus,
+			t.response,
+			t.customData
+		]
+			.map(csvField)
+			.join(',')
 	);
 
 	return [headers.join(','), ...rows].join('\n');
@@ -48,6 +63,10 @@ export function downloadFile(content: string, filename: string, mimeType: string
 	const a = document.createElement('a');
 	a.href = url;
 	a.download = filename;
+	a.style.display = 'none';
+	document.body.appendChild(a);
 	a.click();
-	URL.revokeObjectURL(url);
+	a.remove();
+	// Revoking synchronously can cancel the download in some browsers
+	setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

@@ -3,7 +3,8 @@ import type { ReyElement } from './types.js';
 
 const i = t();
 
-// 18 real elements from the Rey-Osterrieth Complex Figure + 6 distractors
+// 18 real elements (simplified, Rey-Osterrieth-like) + 18 distractors.
+// Each recognition phase uses a disjoint half: 9 real + 9 distractors.
 export const REY_ELEMENTS: ReyElement[] = [
 	// Real elements (simplified geometric components)
 	{ id: 1, label: 'Grosses Rechteck', svgPath: 'M 60 40 L 240 40 L 240 160 L 60 160 Z', isReal: true },
@@ -30,21 +31,32 @@ export const REY_ELEMENTS: ReyElement[] = [
 	{ id: 21, label: 'Pfeil nach rechts', svgPath: 'M 100 170 L 130 170 L 130 165 L 145 175 L 130 185 L 130 180 L 100 180 Z', isReal: false },
 	{ id: 22, label: 'Doppelkreis links oben', svgPath: 'M 30 40 A 10 10 0 1 0 30 60 A 10 10 0 1 0 30 40 M 30 45 A 5 5 0 1 0 30 55 A 5 5 0 1 0 30 45', isReal: false },
 	{ id: 23, label: 'Zickzack unten', svgPath: 'M 170 180 L 180 170 L 190 180 L 200 170 L 210 180', isReal: false },
-	{ id: 24, label: 'Halbmond rechts', svgPath: 'M 280 100 A 20 20 0 0 1 280 140 A 12 12 0 0 0 280 100', isReal: false }
+	{ id: 24, label: 'Halbmond rechts', svgPath: 'M 280 100 A 20 20 0 0 1 280 140 A 12 12 0 0 0 280 100', isReal: false },
+	{ id: 25, label: 'Dreieck unten', svgPath: 'M 150 190 L 170 160 L 130 160 Z', isReal: false },
+	{ id: 26, label: 'Kreis links', svgPath: 'M 90 115 A 12 12 0 1 0 90 139 A 12 12 0 1 0 90 115', isReal: false },
+	{ id: 27, label: 'Kleines Rechteck rechts', svgPath: 'M 180 110 L 220 110 L 220 140 L 180 140 Z', isReal: false },
+	{ id: 28, label: 'Diagonale im linken Rechteck', svgPath: 'M 80 70 L 120 100', isReal: false },
+	{ id: 29, label: 'Parallele Linien links', svgPath: 'M 30 120 L 60 120 M 30 135 L 60 135 M 30 150 L 60 150', isReal: false },
+	{ id: 30, label: 'Kreuz rechts aussen', svgPath: 'M 240 120 L 270 120 M 255 105 L 255 135', isReal: false },
+	{ id: 31, label: 'Vertikale Linie rechts', svgPath: 'M 240 160 L 240 190', isReal: false },
+	{ id: 32, label: 'Quadrat rechts oben', svgPath: 'M 200 50 L 220 50 L 220 70 L 200 70 Z', isReal: false },
+	{ id: 33, label: 'Raute mitte oben', svgPath: 'M 150 45 L 162 62 L 150 80 L 138 62 Z', isReal: false },
+	{ id: 34, label: 'Wellenlinie oben links', svgPath: 'M 80 55 Q 90 45 100 55 Q 110 65 120 55', isReal: false },
+	{ id: 35, label: 'Bogen links oben', svgPath: 'M 60 40 Q 30 55 60 70', isReal: false },
+	{ id: 36, label: 'Horizontale Linie unten', svgPath: 'M 60 180 L 240 180', isReal: false }
 ];
 
 export const REY_FIGURE_CONFIG = {
 	testId: 'rey-figure',
 	testName: i.tests.reyFigure.name,
-	instructions: [
-		'Sie sehen eine komplexe geometrische Figur.',
-		'Praeegen Sie sich die Figur genau ein.',
-		'Anschliessend werden Ihnen einzelne Elemente gezeigt.',
-		'Entscheiden Sie jeweils, ob das Element in der Figur enthalten war.'
-	],
+	instructions: i.tests.reyFigure.instructions,
 
 	studyTimeMs: 30000,
-	elementsTotal: 24,
+	/** Retention interval between immediate and delayed recognition */
+	delayMs: 60000,
 	realElements: 18,
-	distractorElements: 6
+	distractorElements: 18,
+	/** Items per recognition phase (half of each set) */
+	realPerPhase: 9,
+	distractorsPerPhase: 9
 } as const;

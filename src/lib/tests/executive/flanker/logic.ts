@@ -4,7 +4,7 @@ import type { FlankerTrial, FlankerCondition, FlankerDirection } from './types.j
 import type { FlankerSummary } from '$lib/db/models.js';
 import { FLANKER_CONFIG } from './config.js';
 import { shuffle } from '$lib/utils/random.js';
-import { mean, sd } from '$lib/utils/statistics.js';
+import { mean } from '$lib/utils/statistics.js';
 
 function createFlankerDisplay(condition: FlankerCondition, target: FlankerDirection): string {
 	const targetArrow = target === 'left' ? '<' : '>';
@@ -61,7 +61,7 @@ export function evaluateResponse(
 	response: ResponseEvent | null
 ): { correct: boolean; customData: Record<string, unknown> } {
 	if (!response) {
-		return { correct: false, customData: { outcome: 'miss' } };
+		return { correct: false, customData: { outcome: 'miss', condition: stimulus.condition } };
 	}
 
 	const expectedKey = stimulus.targetDirection === 'left'

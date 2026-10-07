@@ -9,11 +9,12 @@
 	import { generateForwardTrials, checkResponse, computeSummary } from './logic.js';
 	import type { CorsiResult } from './types.js';
 	import type { CorsiSummary } from '$lib/db/models.js';
-	import { saveTestRun } from '$lib/db/database.js';
-	import { waitForSession } from '$lib/db/session-store.svelte.js';
+	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+	import { getNextTest } from '$lib/tests/registry.js';
 
 	const i = t();
 	const config = CORSI_CONFIG;
+	const nextTest = getNextTest(config.testId);
 
 	let testShell = $state<TestShell>();
 	let summary = $state<CorsiSummary | null>(null);
@@ -37,6 +38,7 @@
 		await timer.delay(500);
 
 		for (let i = 0; i < sequence.length; i++) {
+			if (!running) return;
 			highlightedBlock = sequence[i];
 			await timer.delay(config.blockHighlightDurationMs);
 			highlightedBlock = null;
@@ -47,7 +49,7 @@
 	}
 
 	function handleBlockClick(blockId: number) {
-		if (phase !== 'input') return;
+		if (phase !== 'input' || userSequence.includes(blockId)) return;
 		userSequence = [...userSequence, blockId];
 	}
 
@@ -72,10 +74,12 @@
 
 	async function runTest() {
 		running = true;
+		timer.reset();
 		const allTrials = generateForwardTrials();
 		totalTrials = allTrials.length;
 		const results: CorsiResult[] = [];
-		let consecutiveFailures = 0;
+		let failuresAtSpan = 0;
+		let lastSpan = -1;
 		const startedAt = new Date().toISOString();
 
 		for (let idx = 0; idx < allTrials.length; idx++) {
@@ -90,7 +94,7 @@
 			const userResponse = await waitForInput();
 			const responseTime = timer.now() - startTime;
 
-			if (!running) break;
+			if (!running) return;
 
 			const correct = checkResponse(trial, userResponse);
 
@@ -100,13 +104,14 @@
 
 			results.push({ trial, userResponse, correct, responseTimeMs: responseTime });
 
-			if (!correct) {
-				consecutiveFailures++;
-			} else {
-				consecutiveFailures = 0;
+			// Adaptive stopping: failures are counted per span length
+			if (trial.spanLength !== lastSpan) {
+				lastSpan = trial.spanLength;
+				failuresAtSpan = 0;
 			}
+			if (!correct) failuresAtSpan++;
 
-			if (consecutiveFailures >= config.maxConsecutiveFailures) {
+			if (failuresAtSpan >= config.maxFailuresPerSpan) {
 				break;
 			}
 
@@ -114,35 +119,34 @@
 			await timer.delay(500);
 		}
 
+		// Left the page mid-test: never save a partial run
+		if (!running) return;
+		const durationMs = timer.now();
+
 		try {
 			summary = computeSummary(results);
 
-			const session = await waitForSession();
-			if (session?.id) {
-				await saveTestRun(
-					{
-						sessionId: session.id,
-						testId: config.testId,
-						startedAt,
-						completedAt: new Date().toISOString(),
-						durationMs: results.reduce((sum, r) => sum + r.responseTimeMs, 0),
-						config: { ...config },
-						summary,
-						environmentWarnings: []
-					},
-					results.map((r, idx) => ({
-						trialNumber: idx,
-						phase: 'test',
-						stimulus: { sequence: r.trial.sequence, spanLength: r.trial.spanLength },
-						response: { userResponse: r.userResponse },
-						rt: r.responseTimeMs,
-						correct: r.correct,
-						onsetTimestamp: 0,
-						responseTimestamp: r.responseTimeMs,
-						customData: {}
-					}))
-				);
-			}
+			await saveRunToSession(
+				{
+					testId: config.testId,
+					startedAt,
+					completedAt: new Date().toISOString(),
+					durationMs,
+					config: { ...config },
+					summary
+				},
+				results.map((r, idx) => ({
+					trialNumber: idx,
+					phase: 'test',
+					stimulus: { sequence: r.trial.sequence, spanLength: r.trial.spanLength },
+					response: { userResponse: r.userResponse },
+					rt: r.responseTimeMs,
+					correct: r.correct,
+					onsetTimestamp: 0,
+					responseTimestamp: r.responseTimeMs,
+					customData: {}
+				}))
+			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
 		} finally {
@@ -161,17 +165,19 @@
 
 	onDestroy(() => {
 		running = false;
+		resolveInput?.([]);
+		resolveInput = null;
 	});
 </script>
 
 <TestShell
 	bind:this={testShell}
-	testId={config.testId}
 	testName={config.testName}
 	instructions={[...config.instructions]}
 	currentTrial={currentTrialIndex}
 	totalTrials={totalTrials}
 	onStart={() => runTest()}
+	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase: testPhase })}
 		{#if testPhase === 'running'}
@@ -236,6 +242,7 @@
 				testName={config.testName}
 				metrics={getResultMetrics()}
 				onOverview={() => goto('/')}
+				onNext={nextTest ? () => goto(nextTest.href) : undefined}
 			/>
 		{/if}
 	{/snippet}
