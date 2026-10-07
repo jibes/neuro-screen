@@ -3,6 +3,7 @@
 	import { t } from '$lib/i18n/index.js';
 	import { TEST_CATEGORIES, ALL_TESTS } from '$lib/tests/registry.js';
 	import { isTestCompleted } from '$lib/db/session-store.svelte.js';
+	import InstallButton from '$lib/components/InstallButton.svelte';
 
 	const i = t();
 	const categories = TEST_CATEGORIES;
@@ -46,6 +47,7 @@
 				</div>
 			</div>
 			<div class="flex flex-wrap gap-2">
+				<InstallButton />
 				<a
 					href="{base}/umgebung"
 					class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"

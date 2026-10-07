@@ -53,6 +53,7 @@ A browser-based neuropsychological screening platform. Runs 15 standardized cogn
 - Trial-by-trial data stored locally via IndexedDB (no server required)
 - Export results as JSON (session) or CSV (trial level) for offline analysis
 - Environment check to validate browser suitability before testing
+- Installable as an app (PWA) and fully usable offline
 - Fully localized in German
 
 ---

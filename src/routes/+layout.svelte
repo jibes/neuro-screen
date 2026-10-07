@@ -8,6 +8,7 @@
 	import { startSessionInit } from '$lib/db/session-store.svelte.js';
 	import { gatherEnvironmentInfo } from '$lib/core/environment-check.js';
 	import { initTheme } from '$lib/theme.svelte.js';
+	import { initPwa } from '$lib/pwa.svelte.js';
 	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
@@ -18,6 +19,7 @@
 	// Ensure a session exists so test results can be saved
 	onMount(() => {
 		initTheme();
+		initPwa();
 		startSessionInit(() => gatherEnvironmentInfo());
 	});
 </script>
