@@ -82,12 +82,12 @@ export const de = {
 		},
 		digitSpan: {
 			name: 'Zahlenspanne',
-			shortDesc: 'Auditives Arbeitsgedächtnis',
+			shortDesc: 'Verbales Arbeitsgedächtnis (vorwärts und rückwärts)',
 			instructions: [
-				'Sie sehen nacheinander einzelne Zahlen auf dem Bildschirm (jeweils von einem Ton begleitet).',
-				'Geben Sie die Zahlen anschließend in der gleichen Reihenfolge ein und bestätigen Sie mit Enter.',
-				'Zu Beginn gibt es zwei Übungsdurchgänge. Danach werden die Folgen schrittweise länger.',
-				'Der Test endet, wenn Sie beide Folgen einer Länge falsch wiedergeben.'
+				'Sie hören nacheinander einzelne Zahlen (falls keine Sprachausgabe verfügbar ist, werden sie angezeigt). Bitte schalten Sie den Ton ein.',
+				'Teil 1 – vorwärts: Geben Sie die Zahlen anschließend in der GLEICHEN Reihenfolge ein und bestätigen Sie mit Enter.',
+				'Teil 2 – rückwärts: Geben Sie die Zahlen in UMGEKEHRTER Reihenfolge ein. Vor jedem Teil gibt es Übungsdurchgänge.',
+				'Die Folgen werden schrittweise länger. Ein Teil endet, wenn beide Folgen einer Länge falsch wiedergegeben werden.'
 			]
 		},
 		stroop: {
@@ -121,12 +121,12 @@ export const de = {
 		},
 		corsi: {
 			name: 'Corsi-Block',
-			shortDesc: 'Visuospatiales Arbeitsgedächtnis',
+			shortDesc: 'Visuell-räumliches Arbeitsgedächtnis (vorwärts und rückwärts)',
 			instructions: [
-				'Auf dem Bildschirm sind mehrere Blöcke angeordnet.',
-				'Einige Blöcke leuchten nacheinander auf.',
-				'Klicken Sie die Blöcke anschließend in der gleichen Reihenfolge an.',
-				'Die Sequenzen werden schrittweise länger.'
+				'Auf dem Bildschirm sind neun Blöcke angeordnet. Einige leuchten nacheinander auf.',
+				'Teil 1 – vorwärts: Klicken Sie die Blöcke anschließend in der GLEICHEN Reihenfolge an.',
+				'Teil 2 – rückwärts: Klicken Sie die Blöcke in UMGEKEHRTER Reihenfolge an. Vor jedem Teil gibt es Übungsdurchgänge.',
+				'Die Folgen werden schrittweise länger. Ein Teil endet, wenn beide Folgen einer Länge falsch sind.'
 			]
 		},
 		symbolDigit: {
@@ -135,8 +135,8 @@ export const de = {
 			instructions: [
 				'Am oberen Bildschirmrand sehen Sie eine Zuordnung von Symbolen zu Zahlen.',
 				'Darunter erscheinen Symbole. Geben Sie die zugehörige Zahl ein.',
-				'Arbeiten Sie so schnell und genau wie möglich.',
-				'Sie haben 90 Sekunden Zeit.'
+				'Zuerst bearbeiten Sie 10 Übungsaufgaben ohne Zeitlimit.',
+				'Danach haben Sie 90 Sekunden Zeit. Arbeiten Sie so schnell und genau wie möglich.'
 			]
 		},
 		trailMakingA: {
@@ -179,26 +179,25 @@ export const de = {
 		},
 		delayedRecall: {
 			name: 'Verzögerter Abruf',
-			shortDesc: 'Langzeitgedächtnis',
+			shortDesc: 'Langzeitgedächtnis: Abruf und Wiedererkennen',
 			instructions: [
-				'Im Wortlisten-Test haben Sie eine Liste von 15 Wörtern gelernt.',
-				'Versuchen Sie jetzt, sich an so viele dieser Wörter wie möglich zu erinnern.',
-				'Geben Sie die Wörter ein und drücken Sie Enter.',
-				'Klicken Sie auf "Fertig", wenn Sie keine weiteren Wörter mehr erinnern.'
+				'Im Wortlisten-Test haben Sie eine Liste von 15 Wörtern gelernt (die erste, mehrfach dargebotene Liste).',
+				'Teil 1: Geben Sie so viele Wörter dieser ersten Liste ein, wie Sie sich erinnern. Klicken Sie auf „Fertig“, wenn Ihnen keine weiteren einfallen.',
+				'Teil 2: Danach sehen Sie einzelne Wörter. Entscheiden Sie jeweils, ob das Wort in der ERSTEN Liste vorkam.'
 			]
 		},
 		wordList: {
 			name: 'Wortliste',
-			shortDesc: 'Verbales Lernen und Gedächtnis',
+			shortDesc: 'Verbales Lernen und Gedächtnis (RAVLT-ähnlich)',
 			instructions: [
-				'Sie sehen nacheinander eine Liste von 15 Wörtern.',
-				'Geben Sie nach der Präsentation so viele Wörter wie möglich ein (Reihenfolge egal).',
-				'Dieser Vorgang wird 5 Mal wiederholt. Danach folgen eine zweite Liste, ein Abruf der ersten Liste und eine Wiedererkennung.',
-				'Führen Sie etwa 20–30 Minuten später den Test "Verzögerter Abruf" durch.'
+				'Sie hören eine Liste von 15 Wörtern (ohne Sprachausgabe werden sie angezeigt). Bitte schalten Sie den Ton ein.',
+				'Geben Sie danach so viele Wörter wie möglich ein – die Reihenfolge ist egal. Die Liste wird insgesamt 5-mal dargeboten.',
+				'Danach folgt einmalig eine zweite Liste und anschließend ein erneuter Abruf der ersten Liste.',
+				'Führen Sie 20–30 Minuten später den Test „Verzögerter Abruf“ durch (bis dahin gern andere, nicht-sprachliche Tests).'
 			]
 		},
 		reyFigure: {
-			name: 'Rey-Figur',
+			name: 'Figurengedächtnis',
 			shortDesc: 'Visuelles Gedächtnis (Wiedererkennung)',
 			instructions: [
 				'Sie sehen 30 Sekunden lang eine komplexe geometrische Figur. Prägen Sie sich die Figur genau ein.',

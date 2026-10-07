@@ -17,8 +17,14 @@
 	const i = t();
 	const config = TRAIL_A_CONFIG;
 	const nextTest = getNextTest(config.testId);
-	const nodes = getNodes();
-	const expectedSequence = getExpectedSequence();
+	const testNodes = getNodes();
+	const testSequence = getExpectedSequence();
+	const sampleSequence = config.sampleNodes.map((n) => n.id);
+
+	// Unscored sample first (original TMT procedure), then the test
+	let stage = $state<'sample' | 'transition' | 'test'>('sample');
+	let nodes = $state(config.sampleNodes);
+	let expectedSequence = $state(sampleSequence);
 
 	let testShell = $state<TestShell>();
 	let summary = $state<TrailMakingSummary | null>(null);
@@ -54,7 +60,8 @@
 			nextExpectedIndex++;
 
 			if (nextExpectedIndex >= expectedSequence.length) {
-				finishTest(now - startTime);
+				if (stage === 'sample') startMainTest();
+				else finishTest(now - startTime);
 			}
 		} else {
 			errors++;
@@ -110,16 +117,38 @@
 		}
 	}
 
-	function runTest() {
-		running = true;
-		startedAt = new Date().toISOString();
-		audio.init();
+	function resetPath() {
+		nextExpectedIndex = 0;
+		completedPath = [];
+		errors = 0;
+		segmentTimes.length = 0;
+		clickLog.length = 0;
 		timer.reset();
 		startTime = timer.now();
 		lastClickTime = startTime;
+		elapsedSeconds = 0;
+	}
+
+	function runTest() {
+		running = true;
+		audio.init();
+		resetPath();
 		intervalId = setInterval(() => {
 			elapsedSeconds = Math.floor((timer.now() - startTime) / 1000);
 		}, 250);
+	}
+
+	async function startMainTest() {
+		running = false;
+		stage = 'transition';
+		await timer.delay(2500);
+		if (destroyed) return;
+		nodes = testNodes;
+		expectedSequence = testSequence;
+		stage = 'test';
+		startedAt = new Date().toISOString();
+		resetPath();
+		running = true;
 	}
 
 	function getNodeColor(nodeId: number): string {
@@ -138,7 +167,10 @@
 		];
 	}
 
+	let destroyed = false;
+
 	onDestroy(() => {
+		destroyed = true;
 		running = false;
 		if (intervalId !== undefined) clearInterval(intervalId);
 		audio.destroy();
@@ -149,14 +181,21 @@
 	bind:this={testShell}
 	testName={config.testName}
 	instructions={[...config.instructions]}
-	currentTrial={nextExpectedIndex}
-	totalTrials={expectedSequence.length}
+	currentTrial={stage === 'test' ? nextExpectedIndex : 0}
+	totalTrials={stage === 'test' ? expectedSequence.length : 0}
 	onStart={() => runTest()}
 	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase })}
-		{#if phase === 'running'}
+		{#if phase === 'running' && stage === 'transition'}
+			<div class="stimulus-area px-6">
+				<p class="text-xl text-center text-slate-600">Übung beendet. Jetzt beginnt der eigentliche Test – so schnell wie möglich!</p>
+			</div>
+		{:else if phase === 'running'}
 			<div class="stimulus-area relative">
+				{#if stage === 'sample'}
+					<div class="absolute top-4 left-4 text-sm font-medium text-amber-600">{i.common.practice}</div>
+				{/if}
 				<div class="absolute top-5 right-16 text-sm tabular-nums text-slate-400">
 					{elapsedSeconds}s
 				</div>
@@ -199,6 +238,15 @@
 							>
 								{node.label}
 							</text>
+							{#if node.id === expectedSequence[0] || node.id === expectedSequence[expectedSequence.length - 1]}
+								<text
+									x={node.x} y={node.y + 6.2}
+									text-anchor="middle"
+									class="text-[2.2px] fill-slate-500 select-none pointer-events-none"
+								>
+									{node.id === expectedSequence[0] ? 'Anfang' : 'Ende'}
+								</text>
+							{/if}
 						</g>
 					{/each}
 				</svg>

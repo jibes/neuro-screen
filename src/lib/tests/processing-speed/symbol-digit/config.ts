@@ -9,5 +9,7 @@ export const SYMBOL_DIGIT_CONFIG = {
 
 	timeLimitMs: 90000,
 	symbols: ['⊕', '⊗', '△', '□', '◇', '☆', '⬡', '⊞', '⊘'] as const,
-	trialPoolSize: 150
+	trialPoolSize: 150,
+	/** Untimed practice items before the timed test (SDMT: 10) */
+	practiceItems: 10
 } as const;

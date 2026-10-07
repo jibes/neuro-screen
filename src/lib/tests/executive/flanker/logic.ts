@@ -3,8 +3,8 @@ import type { ResponseEvent } from '$lib/core/response-collector.js';
 import type { FlankerTrial, FlankerCondition, FlankerDirection } from './types.js';
 import type { FlankerSummary } from '$lib/db/models.js';
 import { FLANKER_CONFIG } from './config.js';
-import { shuffle } from '$lib/utils/random.js';
-import { mean } from '$lib/utils/statistics.js';
+import { constrainedShuffle, exceedsRun } from '$lib/utils/random.js';
+import { mean, median, cleanRTs } from '$lib/utils/statistics.js';
 
 function createFlankerDisplay(condition: FlankerCondition, target: FlankerDirection): string {
 	const targetArrow = target === 'left' ? '<' : '>';
@@ -42,9 +42,14 @@ export function generateTrials(
 		});
 	}
 
-	shuffle(trials);
+	// Max. 3 consecutive trials of the same condition or the same correct response
+	const ordered = constrainedShuffle(
+		trials,
+		(seq, t) =>
+			!exceedsRun(seq, t, (x) => x.condition, 3) && !exceedsRun(seq, t, (x) => x.targetDirection, 3)
+	);
 
-	return trials.map((stimulus) => ({
+	return ordered.map((stimulus) => ({
 		fixationDuration: FLANKER_CONFIG.fixationDuration,
 		stimulusDuration: FLANKER_CONFIG.stimulusDuration,
 		responseWindow: FLANKER_CONFIG.responseWindow,
@@ -82,32 +87,36 @@ export function computeSummary(
 	results: TrialOutcome[],
 	trials: TrialConfig<FlankerTrial>[]
 ): FlankerSummary {
-	const congruentRTs: number[] = [];
-	const incongruentRTs: number[] = [];
+	const rawCongruent: number[] = [];
+	const rawIncongruent: number[] = [];
 	let errorsCongruent = 0;
 	let errorsIncongruent = 0;
 	let congruentTrials = 0;
 	let incongruentTrials = 0;
+	let misses = 0;
 
 	for (let i = 0; i < results.length; i++) {
-		const condition = trials[i].stimulus.condition;
-		if (condition === 'congruent') {
-			congruentTrials++;
-			if (results[i].correct && results[i].rt !== null) {
-				congruentRTs.push(results[i].rt!);
-			}
-			if (!results[i].correct) errorsCongruent++;
-		} else {
-			incongruentTrials++;
-			if (results[i].correct && results[i].rt !== null) {
-				incongruentRTs.push(results[i].rt!);
-			}
-			if (!results[i].correct) errorsIncongruent++;
+		const r = results[i];
+		const congruent = trials[i].stimulus.condition === 'congruent';
+		if (congruent) congruentTrials++;
+		else incongruentTrials++;
+		if (r.rt === null) misses++;
+		if (r.correct && r.rt !== null) {
+			(congruent ? rawCongruent : rawIncongruent).push(r.rt);
+		}
+		if (!r.correct) {
+			if (congruent) errorsCongruent++;
+			else errorsIncongruent++;
 		}
 	}
 
-	const meanCongruent = mean(congruentRTs);
-	const meanIncongruent = mean(incongruentRTs);
+	// RT statistics on correct trials, cleaned per condition
+	const c = cleanRTs(rawCongruent);
+	const ic = cleanRTs(rawIncongruent);
+	const meanCongruent = mean(c.kept);
+	const meanIncongruent = mean(ic.kept);
+	const medianCongruent = median(c.kept);
+	const medianIncongruent = median(ic.kept);
 	const totalCorrect = results.filter((r) => r.correct).length;
 
 	return {
@@ -118,8 +127,14 @@ export function computeSummary(
 		meanRtCongruent: meanCongruent,
 		meanRtIncongruent: meanIncongruent,
 		flankerEffect: meanIncongruent - meanCongruent,
+		medianRtCongruent: medianCongruent,
+		medianRtIncongruent: medianIncongruent,
+		flankerEffectMedian: medianIncongruent - medianCongruent,
 		errorsCongruent,
 		errorsIncongruent,
-		accuracy: results.length > 0 ? totalCorrect / results.length : 0
+		misses,
+		accuracy: results.length > 0 ? totalCorrect / results.length : 0,
+		anticipations: c.anticipations + ic.anticipations,
+		rtOutliersExcluded: c.outliers + ic.outliers
 	};
 }

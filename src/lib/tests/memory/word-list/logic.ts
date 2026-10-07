@@ -1,6 +1,5 @@
-import type { RecallResult, RecognitionItem } from './types.js';
+import type { RecallResult } from './types.js';
 import type { WordListSummary } from '$lib/db/models.js';
-import { dPrime } from '$lib/utils/statistics.js';
 
 /** Uppercase and fold umlauts/ß so "Mütze", "MUETZE" and "muetze" match */
 export function normalizeWord(word: string): string {
@@ -51,28 +50,53 @@ export function computeLearningSlope(wordsPerTrial: number[]): number {
 	return (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 }
 
+/** Proportion of the words at `positions` (0-based list indices) recalled across trials */
+function serialPositionRate(trials: RecallResult[], targetWords: readonly string[], positions: number[]): number {
+	if (trials.length === 0) return 0;
+	const words = positions.map((p) => normalizeWord(targetWords[p]));
+	let hits = 0;
+	for (const t of trials) {
+		const recalled = new Set(t.recalledWords.map(normalizeWord));
+		hits += words.filter((w) => recalled.has(w)).length;
+	}
+	return hits / (words.length * trials.length);
+}
+
+/** RAVLT indices (Lezak et al., 2012; Schmidt, 1996) */
 export function computeSummary(
 	learningResults: RecallResult[],
+	interferenceResult: RecallResult | null,
 	shortDelayResult: RecallResult | null,
-	recognitionItems: RecognitionItem[]
+	targetWords: readonly string[],
+	presentationMode: 'auditory' | 'visual'
 ): WordListSummary {
 	const wordsPerTrial = learningResults.map((r) => r.correctCount);
-	const totalLearned = wordsPerTrial.length > 0 ? wordsPerTrial[wordsPerTrial.length - 1] : 0;
-
-	const recogHits = recognitionItems.filter((r) => r.isTarget && r.userSaidYes).length;
-	const recogFA = recognitionItems.filter((r) => !r.isTarget && r.userSaidYes).length;
-	const totalTargets = recognitionItems.filter((r) => r.isTarget).length;
-	const totalDistractors = recognitionItems.filter((r) => !r.isTarget).length;
+	const a1 = wordsPerTrial[0] ?? 0;
+	const a5 = wordsPerTrial[wordsPerTrial.length - 1] ?? 0;
+	const totalRecall = wordsPerTrial.reduce((sum, n) => sum + n, 0);
+	const b = interferenceResult?.correctCount ?? 0;
+	const a6 = shortDelayResult?.correctCount ?? 0;
+	const n = targetWords.length;
+	const edge = Math.min(5, Math.floor(n / 3));
 
 	return {
 		type: 'word-list',
 		learningTrials: learningResults.length,
 		wordsPerTrial,
-		totalLearned,
+		totalLearned: a5,
+		totalRecall,
 		learningSlope: computeLearningSlope(wordsPerTrial),
-		shortDelayFreeRecall: shortDelayResult?.correctCount ?? 0,
-		recognitionHits: recogHits,
-		recognitionFalseAlarms: recogFA,
-		dPrimeRecognition: totalTargets > 0 ? dPrime(recogHits, totalTargets, recogFA, totalDistractors) : 0
+		learningOverTrials: totalRecall - wordsPerTrial.length * a1,
+		interferenceRecall: b,
+		proactiveInterference: a1 > 0 ? b / a1 : 0,
+		retroactiveInterference: a5 > 0 ? a6 / a5 : 0,
+		shortDelayFreeRecall: a6,
+		intrusions: [...learningResults, interferenceResult, shortDelayResult].reduce(
+			(sum, r) => sum + (r?.intrusionCount ?? 0),
+			0
+		),
+		primacy: serialPositionRate(learningResults, targetWords, Array.from({ length: edge }, (_, i) => i)),
+		recency: serialPositionRate(learningResults, targetWords, Array.from({ length: edge }, (_, i) => n - edge + i)),
+		presentationMode
 	};
 }

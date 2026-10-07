@@ -39,7 +39,16 @@
 	let finished = false;
 
 	// `trials` is extended before currentTrialIndex advances, so the index change triggers the update
-	const currentSymbol = $derived(config.symbols[trials[currentTrialIndex].symbolIndex]);
+	// Untimed practice items with feedback before the 90 s test (as in the SDMT)
+	let stage = $state<'practice' | 'transition' | 'test'>('practice');
+	const practiceItems = generateTrialPool(config.practiceItems);
+	let practiceIndex = $state(0);
+	let practiceHint = $state('');
+	const currentSymbol = $derived(
+		stage === 'practice'
+			? config.symbols[practiceItems[Math.min(practiceIndex, practiceItems.length - 1)].symbolIndex]
+			: config.symbols[trials[currentTrialIndex].symbolIndex]
+	);
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.repeat) return;
@@ -51,6 +60,10 @@
 
 	/** Record a response; `eventTimeStamp` is the key/pointer event's timeStamp */
 	function respond(digit: number, eventTimeStamp: number) {
+		if (stage === 'practice') {
+			practiceRespond(digit);
+			return;
+		}
 		if (!running || timer.paused) return;
 		if (timer.now() >= config.timeLimitMs) {
 			finishTest();
@@ -125,12 +138,38 @@
 		}
 	}
 
-	function runTest() {
+	function practiceRespond(digit: number) {
+		if (practiceIndex >= practiceItems.length) return;
+		const item = practiceItems[practiceIndex];
+		if (digit !== item.correctDigit) {
+			// Wrong: show the correct digit, item must be answered correctly to continue
+			flashColor = 'red';
+			practiceHint = `Richtig wäre ${item.correctDigit}`;
+			setTimeout(() => { flashColor = null; }, 300);
+			return;
+		}
+		practiceHint = '';
+		flashColor = 'green';
+		setTimeout(() => { flashColor = null; }, 150);
+		practiceIndex++;
+		if (practiceIndex >= practiceItems.length) startMainTest();
+	}
+
+	async function startMainTest() {
+		stage = 'transition';
+		await new Promise((r) => setTimeout(r, 2500));
+		if (finished) return;
+		stage = 'test';
 		running = true;
 		startedAt = new Date().toISOString();
 		timer.reset();
 		trialStartTime = timer.now();
 		startTimer();
+	}
+
+	function runTest() {
+		stage = 'practice';
+		practiceIndex = 0;
 	}
 
 	function getResultMetrics() {
@@ -189,15 +228,24 @@
 					{currentSymbol}
 				</div>
 
-				<!-- Timer -->
-				<div class="mt-4 sm:mt-8 text-lg tabular-nums {remainingSeconds <= 10 ? 'text-red-500 font-medium' : 'text-slate-400'}">
-					{remainingSeconds}s
-				</div>
+				{#if stage === 'practice'}
+					<div class="mt-4 sm:mt-8 text-sm font-medium text-amber-600">
+						{i.common.practice} {Math.min(practiceIndex + 1, practiceItems.length)} / {practiceItems.length} – ohne Zeitlimit
+					</div>
+					<div class="mt-2 h-5 text-sm text-red-500">{practiceHint}</div>
+				{:else if stage === 'transition'}
+					<div class="mt-4 sm:mt-8 text-base text-slate-600 text-center px-6">Übung beendet. Jetzt 90 Sekunden – so schnell und genau wie möglich!</div>
+				{:else}
+					<!-- Timer -->
+					<div class="mt-4 sm:mt-8 text-lg tabular-nums {remainingSeconds <= 10 ? 'text-red-500 font-medium' : 'text-slate-400'}">
+						{remainingSeconds}s
+					</div>
 
-				<!-- Counter -->
-				<div class="mt-2 text-sm text-slate-400">
-					{answeredCount} beantwortet
-				</div>
+					<!-- Counter -->
+					<div class="mt-2 text-sm text-slate-400">
+						{answeredCount} beantwortet
+					</div>
+				{/if}
 
 				{#if touch}
 					<div class="mt-4 w-full px-4">

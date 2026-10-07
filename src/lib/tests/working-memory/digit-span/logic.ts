@@ -1,9 +1,9 @@
 import { randomInt } from '$lib/utils/random.js';
-import type { DigitSpanTrial, DigitSpanResult } from './types.js';
+import type { DigitSpanTrial, DigitSpanResult, SpanDirection } from './types.js';
 import type { DigitSpanSummary } from '$lib/db/models.js';
 import { DIGIT_SPAN_CONFIG } from './config.js';
 
-/** Generate a sequence of random digits (1-9, no consecutive repeats) */
+/** Random digits 1–9 without immediate repetitions */
 export function generateDigitSequence(length: number): number[] {
 	const digits: number[] = [];
 	for (let i = 0; i < length; i++) {
@@ -16,60 +16,49 @@ export function generateDigitSequence(length: number): number[] {
 	return digits;
 }
 
-/** Generate all trials for a forward digit span test */
-export function generateForwardTrials(): DigitSpanTrial[] {
+/** All trials for one direction, two per span length */
+export function generateTrials(direction: SpanDirection): DigitSpanTrial[] {
+	const { startSpan, maxSpan } = DIGIT_SPAN_CONFIG[direction];
 	const trials: DigitSpanTrial[] = [];
-	for (let span = DIGIT_SPAN_CONFIG.startSpan; span <= DIGIT_SPAN_CONFIG.maxSpan; span++) {
+	for (let span = startSpan; span <= maxSpan; span++) {
 		for (let attempt = 1; attempt <= DIGIT_SPAN_CONFIG.attemptsPerSpan; attempt++) {
-			trials.push({
-				digits: generateDigitSequence(span),
-				spanLength: span,
-				attemptNumber: attempt
-			});
+			trials.push({ digits: generateDigitSequence(span), spanLength: span, attemptNumber: attempt, direction });
 		}
 	}
 	return trials;
 }
 
-/** Check if user response matches the target sequence */
+/** Forward: same order; backward: reversed order */
 export function checkResponse(trial: DigitSpanTrial, userResponse: number[]): boolean {
-	if (userResponse.length !== trial.digits.length) return false;
-	return trial.digits.every((d, i) => d === userResponse[i]);
+	const expected = trial.direction === 'backward' ? [...trial.digits].reverse() : trial.digits;
+	if (userResponse.length !== expected.length) return false;
+	return expected.every((d, i) => d === userResponse[i]);
 }
 
-/** Compute summary from results. Uses adaptive stopping rule. */
+function scoreDirection(results: DigitSpanResult[]) {
+	const correct = results.filter((r) => r.correct);
+	return {
+		// Longest span: longest length with at least one correct trial (LDSF / LDSB)
+		span: correct.reduce((max, r) => Math.max(max, r.trial.spanLength), 0),
+		// Raw score: number of correct trials (WAIS scoring)
+		trialsCorrect: correct.length,
+		total: results.length
+	};
+}
+
 export function computeSummary(results: DigitSpanResult[]): DigitSpanSummary {
-	let forwardSpan = 0;
-	let forwardTrialsCorrect = 0;
-	let forwardScore = 0;
-
-	// Group by span length
-	const bySpan = new Map<number, DigitSpanResult[]>();
-	for (const r of results) {
-		const span = r.trial.spanLength;
-		if (!bySpan.has(span)) bySpan.set(span, []);
-		bySpan.get(span)!.push(r);
-	}
-
-	for (const [span, spanResults] of bySpan) {
-		const correctCount = spanResults.filter((r) => r.correct).length;
-		if (correctCount > 0) {
-			forwardSpan = span;
-		}
-		forwardTrialsCorrect += correctCount;
-		forwardScore += correctCount;
-	}
-
+	const fwd = scoreDirection(results.filter((r) => r.trial.direction === 'forward'));
+	const bwd = scoreDirection(results.filter((r) => r.trial.direction === 'backward'));
 	return {
 		type: 'digit-span',
-		direction: 'forward',
-		forwardSpan,
-		backwardSpan: 0,
-		forwardTrialsCorrect,
-		backwardTrialsCorrect: 0,
-		forwardTotalTrials: results.length,
-		backwardTotalTrials: 0,
-		forwardScore,
-		backwardScore: 0
+		direction: 'both',
+		forwardSpan: fwd.span,
+		backwardSpan: bwd.span,
+		forwardTrialsCorrect: fwd.trialsCorrect,
+		backwardTrialsCorrect: bwd.trialsCorrect,
+		forwardTotalTrials: fwd.total,
+		backwardTotalTrials: bwd.total,
+		forwardScore: fwd.trialsCorrect,
+		backwardScore: bwd.trialsCorrect
 	};
 }

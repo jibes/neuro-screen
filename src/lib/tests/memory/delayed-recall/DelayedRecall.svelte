@@ -7,7 +7,9 @@
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
 	import { HighResTimer } from '$lib/core/timing.js';
 	import { DELAYED_RECALL_CONFIG } from './config.js';
-	import { computeSummary } from './logic.js';
+	import { computeSummary, type RecognitionResponse } from './logic.js';
+	import { shuffled } from '$lib/utils/random.js';
+	import { WORD_LIST_CONFIG } from '../word-list/config.js';
 	import type { DelayedRecallSummary, TestRun } from '$lib/db/models.js';
 	import { getLatestTestRun } from '$lib/db/database.js';
 	import { saveRunToSession, waitForSession } from '$lib/db/session-store.svelte.js';
@@ -24,6 +26,18 @@
 	let recalledWords = $state<string[]>([]);
 	let remainingSeconds = $state(Math.ceil(config.timeLimitMs / 1000));
 	let running = $state(false);
+	let stage = $state<'recall' | 'recognition'>('recall');
+	let recognitionWord = $state('');
+	let recognitionIndex = $state(0);
+	let recognitionTotal = $state(0);
+	let resolveRecognition: ((yes: boolean) => void) | null = null;
+
+	function answerRecognition(yes: boolean) {
+		if (timer.paused || !resolveRecognition) return;
+		const resolve = resolveRecognition;
+		resolveRecognition = null;
+		resolve(yes);
+	}
 
 	// Prerequisite: a completed word-list run in this session, ideally >= minDelayMinutes ago
 	let prereq = $state<'loading' | 'missing' | 'tooEarly' | 'ok'>('loading');
@@ -58,6 +72,11 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		if (running && stage === 'recognition' && !e.repeat) {
+			if (e.key === 'j' || e.key === 'J') answerRecognition(true);
+			else if (e.key === 'n' || e.key === 'N') answerRecognition(false);
+			return;
+		}
 		if (running && e.key === 'Enter' && !timer.paused) {
 			e.preventDefault();
 			if (inputWord.trim()) {
@@ -66,57 +85,92 @@
 		}
 	}
 
+	/** End of free recall (button or time limit) → recognition trial */
 	async function finishTest() {
-		if (!running) return;
-		running = false;
+		if (!running || stage !== 'recall') return;
 		if (countdownInterval) {
 			clearInterval(countdownInterval);
 			countdownInterval = null;
 		}
 		// Don't lose a word that was typed but not yet added
 		if (inputWord.trim()) addWord();
+		const recallTime = timer.now();
 
-		const responseTime = timer.now();
+		// Recognition: 15 list-A targets, 15 list-B words, 15 new foils (RAVLT procedure)
+		stage = 'recognition';
+		const items = shuffled([
+			...config.targetWords.map((word) => ({ word, kind: 'target' as const })),
+			...WORD_LIST_CONFIG.interferenceWords.map((word) => ({ word, kind: 'listB' as const })),
+			...WORD_LIST_CONFIG.distractorWords.map((word) => ({ word, kind: 'foil' as const }))
+		]);
+		recognitionTotal = items.length;
+		const recognition: RecognitionResponse[] = [];
+		for (let idx = 0; idx < items.length; idx++) {
+			if (!running) return;
+			recognitionIndex = idx;
+			recognitionWord = items[idx].word;
+			const t0 = timer.now();
+			const saidYes = await new Promise<boolean>((resolve) => (resolveRecognition = resolve));
+			if (!running) return;
+			recognition.push({ ...items[idx], saidYes, rt: timer.now() - t0 });
+		}
+		recognitionIndex = items.length;
+		running = false;
 
-		// Immediate recall = last learning trial of the word-list test
+		// A5 and A6 from the word-list test
 		let immediateRecall = 0;
+		let shortDelayRecall = 0;
 		let delayMinutes = 0;
 		if (wordListRun) {
 			const wlSummary = wordListRun.summary;
 			if (wlSummary.type === 'word-list') {
 				immediateRecall = wlSummary.totalLearned;
+				shortDelayRecall = wlSummary.shortDelayFreeRecall;
 			}
 			delayMinutes = Math.round((Date.now() - new Date(wordListRun.completedAt).getTime()) / 60000);
 		}
 
 		try {
-			summary = computeSummary(recalledWords, config.targetWords, immediateRecall, delayMinutes);
+			summary = computeSummary(recalledWords, config.targetWords, immediateRecall, shortDelayRecall, delayMinutes, recognition);
 
 			await saveRunToSession(
 				{
 					testId: config.testId,
 					startedAt,
 					completedAt: new Date().toISOString(),
-					durationMs: responseTime,
+					durationMs: timer.now(),
 					config: { ...config },
 					summary
 				},
-				[{
-					trialNumber: 0,
-					phase: 'delayedRecall',
-					stimulus: { targetWords: [...config.targetWords] },
-					response: { recalledWords: [...recalledWords] },
-					rt: responseTime,
-					correct: null,
-					onsetTimestamp: 0,
-					responseTimestamp: responseTime,
-					customData: {
-						correctCount: summary.delayedRecall,
-						intrusionCount: summary.intrusionErrors,
-						wordListRunId: wordListRun?.id ?? null,
-						belowMinimumDelay: delayMinutes < config.minDelayMinutes
-					}
-				}]
+				[
+					{
+						trialNumber: 0,
+						phase: 'delayedRecall',
+						stimulus: { targetWords: [...config.targetWords] } as Record<string, unknown>,
+						response: { recalledWords: [...recalledWords] } as Record<string, unknown>,
+						rt: recallTime as number | null,
+						correct: null as boolean | null,
+						onsetTimestamp: 0,
+						responseTimestamp: recallTime as number | null,
+						customData: {
+							correctCount: summary.delayedRecall,
+							intrusionCount: summary.intrusionErrors,
+							wordListRunId: wordListRun?.id ?? null,
+							belowMinimumDelay: delayMinutes < config.minDelayMinutes
+						} as Record<string, unknown>
+					},
+					...recognition.map((r, idx) => ({
+						trialNumber: idx + 1,
+						phase: 'recognition',
+						stimulus: { word: r.word, kind: r.kind } as Record<string, unknown>,
+						response: { saidYes: r.saidYes } as Record<string, unknown>,
+						rt: r.rt as number | null,
+						correct: (r.saidYes === (r.kind === 'target')) as boolean | null,
+						onsetTimestamp: 0,
+						responseTimestamp: r.rt as number | null,
+						customData: {} as Record<string, unknown>
+					}))
+				]
 			);
 		} catch (e) {
 			console.error('Fehler beim Speichern:', e);
@@ -142,12 +196,16 @@
 
 	function getResultMetrics() {
 		if (!summary) return [];
+		const n = summary.totalItems;
 		return [
-			{ label: 'Verzögerter Abruf', value: `${summary.delayedRecall}/${summary.totalItems}`, highlight: true },
-			{ label: 'Unmittelbarer Abruf (Trial 5)', value: `${summary.immediateRecall}/${summary.totalItems}` },
-			{ label: 'Behaltenrate', value: `${(summary.retentionRate * 100).toFixed(0)}`, unit: '%', highlight: true },
-			{ label: 'Verzögerung', value: `${summary.delayMinutes}`, unit: 'min' },
-			{ label: 'Intrusionsfehler', value: summary.intrusionErrors }
+			{ label: 'Verzögerter Abruf (A7)', value: `${summary.delayedRecall}/${n}`, highlight: true },
+			{ label: 'Behaltensquote (A7/A5)', value: `${(summary.retentionRate * 100).toFixed(0)}`, unit: '%', highlight: true },
+			{ label: 'A5 / A6 (Wortliste)', value: `${summary.immediateRecall} / ${summary.shortDelayRecall}` },
+			{ label: 'Wiedererkennung: Treffer', value: `${summary.recognitionHits}/${n}` },
+			{ label: 'Wiedererkennung: Falsch-Positive', value: `${summary.recognitionFalseAlarms} (davon Liste B: ${summary.recognitionListBErrors})` },
+			{ label: "Diskrimination (Treffer − FP) / d'", value: `${summary.recognitionDiscriminability} / ${summary.dPrimeRecognition.toFixed(2)}` },
+			{ label: 'Intrusionen', value: summary.intrusionErrors },
+			{ label: 'Verzögerung', value: `${summary.delayMinutes}`, unit: 'min' }
 		];
 	}
 
@@ -157,6 +215,8 @@
 
 	onDestroy(() => {
 		running = false;
+		resolveRecognition?.(false);
+		resolveRecognition = null;
 		if (countdownInterval) clearInterval(countdownInterval);
 		document.removeEventListener('keydown', handleKeydown);
 	});
@@ -205,7 +265,27 @@
 	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
 	{#snippet children({ phase })}
-		{#if phase === 'running'}
+		{#if phase === 'running' && stage === 'recognition'}
+			<div class="stimulus-area px-4">
+				<div class="absolute top-4 left-4 text-sm text-slate-400">Wiedererkennung ({Math.min(recognitionIndex + 1, recognitionTotal)} / {recognitionTotal})</div>
+				<p class="text-sm text-slate-500 mb-6 text-center">War dieses Wort in der ERSTEN Liste?</p>
+				<span class="text-4xl sm:text-5xl font-light text-slate-900 select-none mb-10 block">{recognitionWord}</span>
+				<div class="flex gap-4 justify-center">
+					<button
+						onclick={() => answerRecognition(true)}
+						class="px-8 py-3 text-lg font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+					>
+						Ja <span class="hidden sm:inline text-sm opacity-70">(J)</span>
+					</button>
+					<button
+						onclick={() => answerRecognition(false)}
+						class="px-8 py-3 text-lg font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+					>
+						Nein <span class="hidden sm:inline text-sm opacity-70">(N)</span>
+					</button>
+				</div>
+			</div>
+		{:else if phase === 'running'}
 			<div class="stimulus-area">
 				<div class="absolute top-5 right-16 text-lg font-mono tabular-nums" class:text-red-500={remainingSeconds <= 10} class:text-slate-400={remainingSeconds > 10}>
 					{Math.floor(remainingSeconds / 60)}:{(remainingSeconds % 60).toString().padStart(2, '0')}

@@ -38,5 +38,17 @@ export const TRAIL_A_CONFIG = {
 		{ id: 23, label: '23', x: 50, y: 92 },
 		{ id: 24, label: '24', x: 28, y: 68 },
 		{ id: 25, label: '25', x: 92, y: 60 }
+	] as TrailNode[],
+
+	/** Practice sample (like "Sample A" of the original TMT), not scored */
+	sampleNodes: [
+		{ id: 1, label: '1', x: 30, y: 55 },
+		{ id: 2, label: '2', x: 50, y: 30 },
+		{ id: 3, label: '3', x: 72, y: 45 },
+		{ id: 4, label: '4', x: 60, y: 70 },
+		{ id: 5, label: '5', x: 38, y: 78 },
+		{ id: 6, label: '6', x: 18, y: 35 },
+		{ id: 7, label: '7', x: 40, y: 12 },
+		{ id: 8, label: '8', x: 82, y: 18 }
 	] as TrailNode[]
 } as const;

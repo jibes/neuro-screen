@@ -1,5 +1,5 @@
 import { shuffled } from '$lib/utils/random.js';
-import type { CorsiTrial, CorsiResult } from './types.js';
+import type { CorsiTrial, CorsiResult, CorsiDirection } from './types.js';
 import type { CorsiSummary } from '$lib/db/models.js';
 import { CORSI_CONFIG } from './config.js';
 import { mean } from '$lib/utils/statistics.js';
@@ -10,53 +10,43 @@ export function generateSequence(length: number, blockCount: number = CORSI_CONF
 	return shuffled(blocks).slice(0, Math.min(length, blockCount));
 }
 
-export function generateForwardTrials(): CorsiTrial[] {
+/** Two trials per length for one direction (Kessels et al., 2000) */
+export function generateTrials(direction: CorsiDirection): CorsiTrial[] {
 	const trials: CorsiTrial[] = [];
 	for (let span = CORSI_CONFIG.startSpan; span <= CORSI_CONFIG.maxSpan; span++) {
 		for (let attempt = 1; attempt <= CORSI_CONFIG.attemptsPerSpan; attempt++) {
-			trials.push({
-				sequence: generateSequence(span),
-				spanLength: span,
-				attemptNumber: attempt
-			});
+			trials.push({ sequence: generateSequence(span), spanLength: span, attemptNumber: attempt, direction });
 		}
 	}
 	return trials;
 }
 
+/** Forward: same order; backward: reversed order */
 export function checkResponse(trial: CorsiTrial, userResponse: number[]): boolean {
-	if (userResponse.length !== trial.sequence.length) return false;
-	return trial.sequence.every((id, i) => id === userResponse[i]);
+	const expected = trial.direction === 'backward' ? [...trial.sequence].reverse() : trial.sequence;
+	if (userResponse.length !== expected.length) return false;
+	return expected.every((id, i) => id === userResponse[i]);
+}
+
+function scoreDirection(results: CorsiResult[]) {
+	const correct = results.filter((r) => r.correct);
+	const span = correct.reduce((max, r) => Math.max(max, r.trial.spanLength), 0);
+	// Kessels et al. (2000): total score = block span × number of correctly reproduced sequences
+	return { span, correctTrials: correct.length, totalScore: span * correct.length };
 }
 
 export function computeSummary(results: CorsiResult[]): CorsiSummary {
-	let forwardSpan = 0;
-	let forwardScore = 0;
-	const responseTimes: number[] = [];
-
-	const bySpan = new Map<number, CorsiResult[]>();
-	for (const r of results) {
-		const span = r.trial.spanLength;
-		if (!bySpan.has(span)) bySpan.set(span, []);
-		bySpan.get(span)!.push(r);
-		if (r.responseTimeMs > 0) responseTimes.push(r.responseTimeMs);
-	}
-
-	for (const [span, spanResults] of bySpan) {
-		const correctCount = spanResults.filter((r) => r.correct).length;
-		if (correctCount > 0) {
-			forwardSpan = span;
-		}
-		forwardScore += correctCount;
-	}
+	const fwd = scoreDirection(results.filter((r) => r.trial.direction === 'forward'));
+	const bwd = scoreDirection(results.filter((r) => r.trial.direction === 'backward'));
+	const responseTimes = results.map((r) => r.responseTimeMs).filter((t) => t > 0);
 
 	return {
 		type: 'corsi',
-		forwardSpan,
-		backwardSpan: 0,
-		forwardScore,
-		backwardScore: 0,
-		totalScore: forwardScore,
+		forwardSpan: fwd.span,
+		backwardSpan: bwd.span,
+		forwardScore: fwd.totalScore,
+		backwardScore: bwd.totalScore,
+		totalScore: fwd.totalScore + bwd.totalScore,
 		meanResponseTime: mean(responseTimes)
 	};
 }

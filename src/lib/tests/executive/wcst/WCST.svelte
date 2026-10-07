@@ -7,7 +7,7 @@
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
 	import { HighResTimer } from '$lib/core/timing.js';
 	import { WCST_CONFIG } from './config.js';
-	import { generateTestCard, getMatchedDimensions, isCorrectMatch, matchesRule, computeSummary } from './logic.js';
+	import { generateDeck, getMatchedDimensions, isCorrectMatch, computeSummary, scorePerseveration } from './logic.js';
 	import type { WCSTCard, WCSTRule, WCSTTrialResult } from './types.js';
 	import type { WCSTSummary } from '$lib/db/models.js';
 	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
@@ -30,7 +30,6 @@
 	const timer = new HighResTimer();
 	const results: WCSTTrialResult[] = [];
 	let currentRuleIndex = 0;
-	let previousRule: WCSTRule | null = null;
 	let consecutiveCorrect = 0;
 	let categoriesCompleted = 0;
 	let trialStartTime = 0;
@@ -39,8 +38,10 @@
 
 	const currentRule = $derived(config.ruleSequence[currentRuleIndex % 3]);
 
+	const deck = generateDeck();
+
 	function nextTrial() {
-		currentCard = generateTestCard();
+		currentCard = deck[trialNumber];
 		trialStartTime = timer.now();
 		showFeedback = false;
 	}
@@ -52,19 +53,13 @@
 		const correct = isCorrectMatch(currentCard, refIndex, currentRule);
 		const matchedDimensions = getMatchedDimensions(currentCard, config.referenceCards[refIndex]);
 
-		// Perseveration check
-		let isPerseverative = false;
-		if (!correct && previousRule !== null) {
-			isPerseverative = matchesRule(currentCard, refIndex, previousRule);
-		}
-
 		results.push({
 			testCard: currentCard,
 			selectedRefIndex: refIndex,
 			currentRule,
 			matchedDimensions,
 			correct,
-			isPerseverative,
+			isPerseverative: false, // scored after the test (requires look-ahead for the sandwich rule)
 			trialNumber,
 			rt
 		});
@@ -84,7 +79,6 @@
 		if (consecutiveCorrect >= config.correctToSwitch) {
 			categoriesCompleted++;
 			consecutiveCorrect = 0;
-			previousRule = currentRule;
 			currentRuleIndex++;
 		}
 
@@ -105,6 +99,8 @@
 		running = false;
 		try {
 			summary = computeSummary(results);
+			const perseverative = scorePerseveration(results);
+			results.forEach((r, idx) => (r.isPerseverative = perseverative[idx]));
 
 			await saveRunToSession(
 				{
@@ -145,7 +141,9 @@
 		if (!summary) return [];
 		return [
 			{ label: 'Kategorien', value: `${summary.categoriesCompleted}/${config.maxCategories}`, highlight: true },
-			{ label: 'Perseverative Fehler', value: summary.perseverativeErrors, highlight: true },
+			{ label: 'Perseverative Fehler', value: `${summary.perseverativeErrors} (${summary.totalTrials ? ((summary.perseverativeErrors / summary.totalTrials) * 100).toFixed(0) : 0} %)`, highlight: true },
+			{ label: 'Perseverative Antworten', value: summary.perseverativeResponses },
+			{ label: 'Failure to Maintain Set', value: summary.failureToMaintainSet },
 			{ label: 'Gesamtfehler', value: summary.totalErrors },
 			{ label: 'Nicht-perseverative Fehler', value: summary.nonPerseverativeErrors },
 			{ label: 'Konzeptuelles Niveau', value: summary.conceptualLevelResponses },

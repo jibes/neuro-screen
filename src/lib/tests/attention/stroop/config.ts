@@ -8,8 +8,8 @@ export const STROOP_CONFIG = {
 	testName: i.tests.stroop.name,
 	instructions: i.tests.stroop.instructions,
 
-	totalTrials: 90,
-	trialsPerCondition: 30,
+	totalTrials: 108, // 36 per condition: inks and ink-word pairings fully balanced
+	trialsPerCondition: 36,
 	stimulusDuration: null as number | null,
 	fixationDuration: 500,
 	responseWindow: 2000,

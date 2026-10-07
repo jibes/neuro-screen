@@ -8,6 +8,7 @@
 	import { isTouchDevice } from '$lib/core/device.js';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
+	import { resetPauseCount, notePause } from '$lib/db/session-store.svelte.js';
 
 	export type TestPhase = 'instructions' | 'countdown' | 'running' | 'completed';
 
@@ -47,6 +48,7 @@
 		if (phase !== 'running' || paused) return;
 		pauseReason = reason;
 		paused = true;
+		notePause();
 		onPauseChange?.(true);
 	}
 
@@ -85,6 +87,7 @@
 	}
 
 	function onCountdownComplete() {
+		resetPauseCount();
 		phase = 'running';
 		onStart?.();
 	}

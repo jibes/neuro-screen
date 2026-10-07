@@ -18,5 +18,8 @@ export interface TowerProblemResult {
 	planningTimeMs: number;
 	executionTimeMs: number;
 	solved: boolean;
+	/** Solved in the minimum number of moves (standard ToL accuracy score) */
+	solvedOptimally: boolean;
+	timedOut: boolean;
 	ruleViolations: number;
 }

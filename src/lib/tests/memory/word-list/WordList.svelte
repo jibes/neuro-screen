@@ -8,11 +8,11 @@
 	import { HighResTimer } from '$lib/core/timing.js';
 	import { WORD_LIST_CONFIG } from './config.js';
 	import { scoreRecall, computeSummary } from './logic.js';
-	import type { RecallResult, RecognitionItem } from './types.js';
+	import type { RecallResult } from './types.js';
 	import type { WordListSummary } from '$lib/db/models.js';
 	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
 	import { getNextTest } from '$lib/tests/registry.js';
-	import { shuffled } from '$lib/utils/random.js';
+	import { getGermanVoice, speak, stopSpeaking } from '$lib/core/speech.js';
 
 	const i = t();
 	const config = WORD_LIST_CONFIG;
@@ -21,7 +21,7 @@
 	let testShell = $state<TestShell>();
 	let summary = $state<WordListSummary | null>(null);
 
-	type Phase = 'idle' | 'presenting' | 'recall' | 'feedback' | 'recognition' | 'interlude';
+	type Phase = 'idle' | 'presenting' | 'recall' | 'feedback' | 'interlude';
 	let phase = $state<Phase>('idle');
 	let currentWord = $state('');
 	let phaseLabel = $state('');
@@ -29,7 +29,6 @@
 	let inputWord = $state('');
 	let recalledWords = $state<string[]>([]);
 	let feedbackText = $state('');
-	let recognitionWord = $state('');
 	let currentTrialIndex = $state(0);
 	let totalTrials = $state(0);
 	let recallRemaining = $state(0);
@@ -40,10 +39,8 @@
 	const learningResults: RecallResult[] = [];
 	let interferenceResult: RecallResult | null = null;
 	let shortDelayResult: RecallResult | null = null;
-	const recognitionItems: RecognitionItem[] = [];
 
 	let resolveRecall: ((words: string[]) => void) | null = null;
-	let resolveRecognition: ((answer: boolean) => void) | null = null;
 
 	function addWord() {
 		const word = inputWord.trim().toUpperCase();
@@ -66,13 +63,6 @@
 		}
 	}
 
-	function handleRecognition(answer: boolean) {
-		if (resolveRecognition) {
-			resolveRecognition(answer);
-			resolveRecognition = null;
-		}
-	}
-
 	function handleKeydown(e: KeyboardEvent) {
 		if (phase === 'recall' && e.key === 'Enter' && !timer.paused) {
 			e.preventDefault();
@@ -82,10 +72,15 @@
 		}
 	}
 
+	/** Spoken presentation (as in the RAVLT) when a German voice exists, otherwise visual */
+	let voice: SpeechSynthesisVoice | null = null;
+	let presentationMode = $state<'auditory' | 'visual'>('visual');
+
 	async function presentWords(words: readonly string[]) {
 		phase = 'presenting';
 		for (let i = 0; i < words.length; i++) {
 			if (!running) return;
+			if (voice) speak(words[i].toLowerCase(), voice);
 			currentWord = words[i];
 			await timer.delay(config.wordDisplayDurationMs);
 			currentWord = '';
@@ -119,17 +114,13 @@
 		}
 	}
 
-	async function waitForRecognitionAnswer(): Promise<boolean> {
-		return new Promise((resolve) => {
-			resolveRecognition = resolve;
-		});
-	}
-
 	async function runTest() {
 		running = true;
 		timer.reset();
+		voice = await getGermanVoice();
+		presentationMode = voice ? 'auditory' : 'visual';
 		const startedAt = new Date().toISOString();
-		totalTrials = config.learningTrials + 3; // learning + interference + short delay + recognition
+		totalTrials = config.learningTrials + 2; // learning A1–A5 + list B + A6
 
 		// Phase 1: 5 learning trials
 		for (let trial = 0; trial < config.learningTrials; trial++) {
@@ -157,8 +148,9 @@
 				responseTimeMs: responseTime
 			});
 
+			// No score feedback (standard RAVLT administration)
 			phase = 'feedback';
-			feedbackText = `${correctCount} von ${config.targetWords.length} richtig`;
+			feedbackText = trial < config.learningTrials - 1 ? 'Die Liste wird nun noch einmal dargeboten.' : 'Danke.';
 			await timer.delay(2000);
 		}
 
@@ -189,8 +181,8 @@
 			intrusionCount: intScore.intrusionCount,
 			responseTimeMs: timer.now() - intStart
 		};
-		feedbackText = `${intScore.correctCount} von ${config.interferenceWords.length} richtig`;
-		await timer.delay(2000);
+		feedbackText = 'Danke.';
+		await timer.delay(1500);
 
 		// Phase 3: Short-delay free recall of original list
 		if (!running) return;
@@ -217,46 +209,13 @@
 		};
 
 		phase = 'feedback';
-		feedbackText = `${sdScore.correctCount} von ${config.targetWords.length} richtig`;
-		await timer.delay(2000);
+		feedbackText = 'Danke. Der verzögerte Abruf folgt in 20–30 Minuten (Test „Verzögerter Abruf“).';
+		await timer.delay(3500);
 
-		// Phase 4: Recognition
-		if (!running) return;
-		currentTrialIndex = config.learningTrials + 2;
-		phaseLabel = 'Rekognition';
-		trialLabel = '';
-
-		phase = 'interlude';
-		feedbackText = 'War das folgende Wort in der ersten Liste? Ja / Nein';
-		await timer.delay(3000);
-
-		const allRecogWords = shuffled([...config.targetWords, ...config.distractorWords]);
-		const targetSet = new Set<string>(config.targetWords);
-
-		phase = 'recognition';
-		for (let ri = 0; ri < allRecogWords.length; ri++) {
-			if (!running) return;
-			const word = allRecogWords[ri];
-			recognitionWord = word;
-			trialLabel = `${ri + 1} von ${allRecogWords.length}`;
-
-			const rtStart = timer.now();
-			const answer = await waitForRecognitionAnswer();
-			if (!running) return;
-			const rt = timer.now() - rtStart;
-
-			const isTarget = targetSet.has(word);
-			recognitionItems.push({
-				word,
-				isTarget,
-				userSaidYes: answer,
-				correct: (answer && isTarget) || (!answer && !isTarget),
-				rt
-			});
-		}
+		const presentationModeUsed = presentationMode;
 
 		try {
-			summary = computeSummary(learningResults, shortDelayResult, recognitionItems);
+			summary = computeSummary(learningResults, interferenceResult, shortDelayResult, config.targetWords, presentationModeUsed);
 
 			const recallTrial = (r: RecallResult, trialNumber: number, words: readonly string[]) => ({
 				trialNumber,
@@ -275,20 +234,7 @@
 				...(shortDelayResult ? [{ r: shortDelayResult, words: config.targetWords }] : [])
 			].map(({ r, words }, idx) => recallTrial(r, idx, words));
 
-			const trialData = [
-				...recallTrials,
-				...recognitionItems.map((r, idx) => ({
-					trialNumber: recallTrials.length + idx,
-					phase: 'recognition',
-					stimulus: { word: r.word, isTarget: r.isTarget } as Record<string, unknown>,
-					response: { saidYes: r.userSaidYes } as Record<string, unknown>,
-					rt: r.rt as number | null,
-					correct: r.correct as boolean | null,
-					onsetTimestamp: 0,
-					responseTimestamp: r.rt as number | null,
-					customData: {} as Record<string, unknown>
-				}))
-			];
+			const trialData = recallTrials;
 
 			await saveRunToSession(
 				{
@@ -296,7 +242,7 @@
 					startedAt,
 					completedAt: new Date().toISOString(),
 					durationMs: timer.now(),
-					config: { ...config },
+					config: { ...config, presentationMode: presentationModeUsed },
 					summary
 				},
 				trialData
@@ -310,14 +256,16 @@
 
 	function getResultMetrics() {
 		if (!summary) return [];
+		const n = config.targetWords.length;
 		return [
-			{ label: `Gelernt (Trial ${summary.learningTrials})`, value: `${summary.totalLearned}/${config.targetWords.length}`, highlight: true },
-			{ label: 'Lernsteigung', value: summary.learningSlope.toFixed(2), highlight: true },
-			{ label: 'Kurzabruf', value: `${summary.shortDelayFreeRecall}/${config.targetWords.length}` },
-			{ label: 'Rekognition (Treffer)', value: `${summary.recognitionHits}/${config.targetWords.length}` },
-			{ label: 'Rekognition (Falsche)', value: summary.recognitionFalseAlarms },
-			{ label: "d' Rekognition", value: summary.dPrimeRecognition.toFixed(2) },
-			{ label: 'Wörter pro Trial', value: summary.wordsPerTrial.join(', ') }
+			{ label: 'Summe Durchgänge 1–5', value: `${summary.totalRecall}/${n * summary.learningTrials}`, highlight: true },
+			{ label: 'Wörter pro Durchgang (A1–A5)', value: summary.wordsPerTrial.join(' – ') },
+			{ label: 'Lernzuwachs (Σ − 5 × A1)', value: summary.learningOverTrials },
+			{ label: 'Interferenzliste B', value: `${summary.interferenceRecall}/${n}` },
+			{ label: 'Abruf nach Interferenz (A6)', value: `${summary.shortDelayFreeRecall}/${n}`, highlight: true },
+			{ label: 'Retroaktive Interferenz (A6/A5)', value: `${(summary.retroactiveInterference * 100).toFixed(0)}`, unit: '%' },
+			{ label: 'Intrusionen', value: summary.intrusions },
+			{ label: 'Primacy / Recency', value: `${(summary.primacy * 100).toFixed(0)} % / ${(summary.recency * 100).toFixed(0)} %` }
 		];
 	}
 
@@ -329,8 +277,7 @@
 		running = false;
 		resolveRecall?.([]);
 		resolveRecall = null;
-		resolveRecognition?.(false);
-		resolveRecognition = null;
+		stopSpeaking();
 		document.removeEventListener('keydown', handleKeydown);
 	});
 </script>
@@ -354,7 +301,12 @@
 				{/if}
 
 				{#if phase === 'presenting'}
-					{#if currentWord}
+					{#if presentationMode === 'auditory'}
+						<svg viewBox="0 0 24 24" class="h-16 w-16 text-slate-400 {currentWord ? 'opacity-100' : 'opacity-40'} transition-opacity" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Zuhören">
+							<path d="M11 5 6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+						</svg>
+						<p class="mt-4 text-sm text-slate-400">Hören Sie gut zu …</p>
+					{:else if currentWord}
 						<span class="text-6xl font-light text-slate-900 select-none">{currentWord}</span>
 					{:else}
 						<span class="text-6xl font-light text-transparent select-none">WORT</span>
@@ -408,26 +360,6 @@
 
 				{:else if phase === 'feedback' || phase === 'interlude'}
 					<span class="text-xl text-slate-600">{feedbackText}</span>
-
-				{:else if phase === 'recognition'}
-					<div class="text-center">
-						<p class="text-sm text-slate-400 mb-6">War dieses Wort in der ersten Liste?</p>
-						<span class="text-5xl font-light text-slate-900 select-none mb-8 block">{recognitionWord}</span>
-						<div class="flex gap-4 justify-center mt-8">
-							<button
-								onclick={() => handleRecognition(true)}
-								class="px-8 py-3 text-lg font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-							>
-								Ja
-							</button>
-							<button
-								onclick={() => handleRecognition(false)}
-								class="px-8 py-3 text-lg font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-							>
-								Nein
-							</button>
-						</div>
-					</div>
 
 				{:else}
 					<span class="text-slate-400">Bereit...</span>

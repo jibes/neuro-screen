@@ -3,8 +3,8 @@ import type { ResponseEvent } from '$lib/core/response-collector.js';
 import type { StroopTrial, StroopColor } from './types.js';
 import type { StroopSummary } from '$lib/db/models.js';
 import { STROOP_CONFIG } from './config.js';
-import { shuffle } from '$lib/utils/random.js';
-import { mean } from '$lib/utils/statistics.js';
+import { constrainedShuffle, exceedsRun } from '$lib/utils/random.js';
+import { mean, median, cleanRTs } from '$lib/utils/statistics.js';
 
 const colorToWord: Record<StroopColor, string> = {
 	rot: 'ROT',
@@ -61,9 +61,20 @@ export function generateTrials(
 		});
 	}
 
-	shuffle(trials);
+	// Counterbalancing constraints (MacLeod, 1991; Mayr et al., 2003):
+	// - no ink-colour repetition on consecutive trials (avoids response-repetition priming)
+	// - the word must not name the previous ink colour (avoids negative priming)
+	// - max. 3 consecutive trials of the same condition
+	const ordered = constrainedShuffle(trials, (seq, t) => {
+		const prev = seq[seq.length - 1];
+		if (prev) {
+			if (prev.inkColor === t.inkColor) return false;
+			if (t.word === colorToWord[prev.inkColor]) return false;
+		}
+		return !exceedsRun(seq, t, (x) => x.condition, 3);
+	});
 
-	return trials.map((stimulus) => ({
+	return ordered.map((stimulus) => ({
 		fixationDuration: STROOP_CONFIG.fixationDuration,
 		stimulusDuration: STROOP_CONFIG.stimulusDuration,
 		responseWindow: STROOP_CONFIG.responseWindow,
@@ -93,54 +104,49 @@ export function computeSummary(
 	results: TrialOutcome[],
 	trials: TrialConfig<StroopTrial>[]
 ): StroopSummary {
-	const congruentRTs: number[] = [];
-	const incongruentRTs: number[] = [];
-	const neutralRTs: number[] = [];
-	let errorsCongruent = 0;
-	let errorsIncongruent = 0;
-	let errorsNeutral = 0;
-	let congruentTrials = 0;
-	let incongruentTrials = 0;
-	let neutralTrials = 0;
+	const raw: Record<StroopTrial['condition'], number[]> = { congruent: [], incongruent: [], neutral: [] };
+	const errors: Record<StroopTrial['condition'], number> = { congruent: 0, incongruent: 0, neutral: 0 };
+	const counts: Record<StroopTrial['condition'], number> = { congruent: 0, incongruent: 0, neutral: 0 };
+	let misses = 0;
 
 	for (let i = 0; i < results.length; i++) {
 		const condition = trials[i].stimulus.condition;
 		const r = results[i];
-
-		if (condition === 'congruent') {
-			congruentTrials++;
-			if (r.correct && r.rt !== null) congruentRTs.push(r.rt);
-			if (!r.correct) errorsCongruent++;
-		} else if (condition === 'incongruent') {
-			incongruentTrials++;
-			if (r.correct && r.rt !== null) incongruentRTs.push(r.rt);
-			if (!r.correct) errorsIncongruent++;
-		} else {
-			neutralTrials++;
-			if (r.correct && r.rt !== null) neutralRTs.push(r.rt);
-			if (!r.correct) errorsNeutral++;
-		}
+		counts[condition]++;
+		if (r.rt === null) misses++;
+		if (r.correct && r.rt !== null) raw[condition].push(r.rt);
+		if (!r.correct) errors[condition]++;
 	}
 
-	const meanCongruent = mean(congruentRTs);
-	const meanIncongruent = mean(incongruentRTs);
-	const meanNeutral = mean(neutralRTs);
+	// RT statistics on correct trials, cleaned per condition
+	const c = cleanRTs(raw.congruent);
+	const ic = cleanRTs(raw.incongruent);
+	const n = cleanRTs(raw.neutral);
+	const meanCongruent = mean(c.kept);
+	const meanIncongruent = mean(ic.kept);
+	const meanNeutral = mean(n.kept);
 	const totalCorrect = results.filter((r) => r.correct).length;
 
 	return {
 		type: 'stroop',
-		congruentTrials,
-		incongruentTrials,
-		neutralTrials,
+		congruentTrials: counts.congruent,
+		incongruentTrials: counts.incongruent,
+		neutralTrials: counts.neutral,
 		meanRtCongruent: meanCongruent,
 		meanRtIncongruent: meanIncongruent,
 		meanRtNeutral: meanNeutral,
 		stroopEffect: meanIncongruent - meanCongruent,
 		stroopInterference: meanIncongruent - meanNeutral,
 		stroopFacilitation: meanNeutral - meanCongruent,
-		errorsCongruent,
-		errorsIncongruent,
-		errorsNeutral,
-		accuracy: results.length > 0 ? totalCorrect / results.length : 0
+		errorsCongruent: errors.congruent,
+		errorsIncongruent: errors.incongruent,
+		errorsNeutral: errors.neutral,
+		medianRtCongruent: median(c.kept),
+		medianRtIncongruent: median(ic.kept),
+		medianRtNeutral: median(n.kept),
+		misses,
+		accuracy: results.length > 0 ? totalCorrect / results.length : 0,
+		anticipations: c.anticipations + ic.anticipations + n.anticipations,
+		rtOutliersExcluded: c.outliers + ic.outliers + n.outliers
 	};
 }

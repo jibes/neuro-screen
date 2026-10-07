@@ -4,10 +4,13 @@ export interface CorsiBlock {
 	y: number;
 }
 
+export type CorsiDirection = 'forward' | 'backward';
+
 export interface CorsiTrial {
 	sequence: number[];
 	spanLength: number;
 	attemptNumber: number;
+	direction: CorsiDirection;
 }
 
 export interface CorsiResult {

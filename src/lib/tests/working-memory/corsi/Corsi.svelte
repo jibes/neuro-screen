@@ -7,8 +7,8 @@
 	import ResultsCard from '$lib/components/ResultsCard.svelte';
 	import { HighResTimer } from '$lib/core/timing.js';
 	import { CORSI_CONFIG } from './config.js';
-	import { generateForwardTrials, checkResponse, computeSummary } from './logic.js';
-	import type { CorsiResult } from './types.js';
+	import { generateTrials, generateSequence, checkResponse, computeSummary } from './logic.js';
+	import type { CorsiResult, CorsiDirection } from './types.js';
 	import type { CorsiSummary } from '$lib/db/models.js';
 	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
 	import { getNextTest } from '$lib/tests/registry.js';
@@ -20,7 +20,7 @@
 	let testShell = $state<TestShell>();
 	let summary = $state<CorsiSummary | null>(null);
 
-	type Phase = 'idle' | 'presenting' | 'input' | 'feedback';
+	type Phase = 'idle' | 'presenting' | 'input' | 'feedback' | 'message';
 	let phase = $state<Phase>('idle');
 	let highlightedBlock = $state<number | null>(null);
 	let userSequence = $state<number[]>([]);
@@ -73,55 +73,89 @@
 		});
 	}
 
-	async function runTest() {
-		running = true;
-		timer.reset();
-		const allTrials = generateForwardTrials();
-		totalTrials = allTrials.length;
-		const results: CorsiResult[] = [];
+	let direction = $state<CorsiDirection>('forward');
+	let practicing = $state(false);
+	let message = $state('');
+
+	async function showMessage(text: string, ms: number) {
+		phase = 'message';
+		message = text;
+		await timer.delay(ms);
+		phase = 'idle';
+		await timer.delay(500);
+	}
+
+	/** Practice with feedback (not scored) */
+	async function runPractice(dir: CorsiDirection): Promise<boolean> {
+		practicing = true;
+		direction = dir;
+		for (let p = 0; p < config.practiceTrials; p++) {
+			if (!running) return false;
+			const sequence = generateSequence(config.practiceSpan);
+			await presentSequence(sequence);
+			const response = await waitForInput();
+			if (!running) return false;
+			phase = 'feedback';
+			feedbackCorrect = checkResponse({ sequence, spanLength: sequence.length, attemptNumber: p + 1, direction: dir }, response);
+			await timer.delay(config.feedbackDurationMs);
+			phase = 'idle';
+			await timer.delay(500);
+		}
+		practicing = false;
+		return running;
+	}
+
+	/** Test block: no feedback; discontinue after both trials of a length fail */
+	async function runBlock(dir: CorsiDirection, results: CorsiResult[]): Promise<boolean> {
+		direction = dir;
+		const trials = generateTrials(dir);
+		totalTrials = trials.length;
 		let failuresAtSpan = 0;
 		let lastSpan = -1;
-		const startedAt = new Date().toISOString();
 
-		for (let idx = 0; idx < allTrials.length; idx++) {
-			if (!running) break;
-
+		for (let idx = 0; idx < trials.length; idx++) {
+			if (!running) return false;
 			currentTrialIndex = idx;
-			const trial = allTrials[idx];
+			const trial = trials[idx];
 
 			await presentSequence(trial.sequence);
-
 			const startTime = timer.now();
 			const userResponse = await waitForInput();
 			const responseTime = timer.now() - startTime;
-
-			if (!running) return;
+			if (!running) return false;
 
 			const correct = checkResponse(trial, userResponse);
-
-			phase = 'feedback';
-			feedbackCorrect = correct;
-			await timer.delay(config.feedbackDurationMs);
-
 			results.push({ trial, userResponse, correct, responseTimeMs: responseTime });
 
-			// Adaptive stopping: failures are counted per span length
 			if (trial.spanLength !== lastSpan) {
 				lastSpan = trial.spanLength;
 				failuresAtSpan = 0;
 			}
 			if (!correct) failuresAtSpan++;
-
-			if (failuresAtSpan >= config.maxFailuresPerSpan) {
-				break;
-			}
+			if (failuresAtSpan >= config.maxFailuresPerSpan) break;
 
 			phase = 'idle';
-			await timer.delay(500);
+			await timer.delay(1000);
 		}
+		currentTrialIndex = totalTrials;
+		return running;
+	}
 
-		// Left the page mid-test: never save a partial run
-		if (!running) return;
+	async function runTest() {
+		running = true;
+		timer.reset();
+		const startedAt = new Date().toISOString();
+		const results: CorsiResult[] = [];
+
+		if (!(await runPractice('forward'))) return;
+		await showMessage('Jetzt beginnt der Test (vorwärts).', 2500);
+		if (!(await runBlock('forward', results))) return;
+
+		await showMessage('Nun rückwärts: Klicken Sie die Blöcke in UMGEKEHRTER Reihenfolge an.', 4000);
+		if (!(await runPractice('backward'))) return;
+		await showMessage('Jetzt beginnt der Test (rückwärts).', 2500);
+		if (!(await runBlock('backward', results))) return;
+
 		const durationMs = timer.now();
 
 		try {
@@ -138,8 +172,8 @@
 				},
 				results.map((r, idx) => ({
 					trialNumber: idx,
-					phase: 'test',
-					stimulus: { sequence: r.trial.sequence, spanLength: r.trial.spanLength },
+					phase: r.trial.direction,
+					stimulus: { sequence: r.trial.sequence, spanLength: r.trial.spanLength, attempt: r.trial.attemptNumber },
 					response: { userResponse: r.userResponse },
 					rt: r.responseTimeMs,
 					correct: r.correct,
@@ -158,8 +192,10 @@
 	function getResultMetrics() {
 		if (!summary) return [];
 		return [
-			{ label: i.results.forwardSpan, value: summary.forwardSpan, highlight: true },
-			{ label: 'Score', value: summary.forwardScore, highlight: true },
+			{ label: 'Blockspanne vorwärts', value: summary.forwardSpan, highlight: true },
+			{ label: 'Blockspanne rückwärts', value: summary.backwardSpan, highlight: true },
+			{ label: 'Gesamtscore vorwärts (Spanne × korrekte Folgen)', value: summary.forwardScore },
+			{ label: 'Gesamtscore rückwärts', value: summary.backwardScore },
 			{ label: 'Mittlere Antwortzeit', value: `${summary.meanResponseTime.toFixed(0)}`, unit: 'ms' }
 		];
 	}
@@ -182,7 +218,14 @@
 >
 	{#snippet children({ phase: testPhase })}
 		{#if testPhase === 'running'}
-			{#if phase === 'idle'}
+			{#if practicing}
+				<div class="fixed top-4 left-4 text-sm font-medium text-amber-600">{i.common.practice}</div>
+			{/if}
+			{#if phase === 'message'}
+				<div class="stimulus-area px-6">
+					<p class="text-xl text-center text-slate-600">{message}</p>
+				</div>
+			{:else if phase === 'idle'}
 				<div class="stimulus-area">
 					<span class="text-slate-400">Bereit...</span>
 				</div>
@@ -211,7 +254,10 @@
 					</div>
 
 					{#if phase === 'input'}
-						<div class="mt-6 flex gap-3 justify-center">
+						<p class="mt-4 text-sm font-medium {direction === 'backward' ? 'text-amber-600' : 'text-slate-600'}">
+							{direction === 'backward' ? 'Rückwärts: in umgekehrter Reihenfolge anklicken' : 'Vorwärts: in derselben Reihenfolge anklicken'}
+						</p>
+						<div class="mt-3 flex gap-3 justify-center">
 							<button
 								onclick={resetInput}
 								disabled={userSequence.length === 0}
@@ -228,7 +274,7 @@
 							</button>
 						</div>
 					{:else}
-						<p class="mt-6 text-sm text-slate-400">Beobachten Sie die Reihenfolge...</p>
+						<p class="mt-6 text-sm text-slate-400">Beobachten Sie die Reihenfolge …</p>
 					{/if}
 				</div>
 			{:else if phase === 'feedback'}

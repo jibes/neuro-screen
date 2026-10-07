@@ -3,8 +3,8 @@ import type { ResponseEvent } from '$lib/core/response-collector.js';
 import type { GoNoGoTrial, StimulusType } from './types.js';
 import type { GoNoGoSummary } from '$lib/db/models.js';
 import { GO_NOGO_CONFIG } from './config.js';
-import { generateTrialSequence } from '$lib/utils/random.js';
-import { mean, median, sd, dPrime, responseBias } from '$lib/utils/statistics.js';
+import { generateTrialSequence, constrainedShuffle, exceedsRun } from '$lib/utils/random.js';
+import { mean, median, sd, dPrime, responseBias, cleanRTs } from '$lib/utils/statistics.js';
 import type { TrialOutcome } from '$lib/core/trial-runner.svelte.js';
 
 export function generateTrials(
@@ -12,7 +12,11 @@ export function generateTrials(
 	goRatio: number,
 	showFeedback: boolean
 ): TrialConfig<GoNoGoTrial>[] {
-	const sequence = generateTrialSequence(count, goRatio);
+	// No more than 2 No-Go trials in a row, so inhibition demand stays tied to a prepotent Go response
+	const sequence = constrainedShuffle(
+		generateTrialSequence(count, goRatio),
+		(seq, isGo) => isGo || !exceedsRun(seq, isGo, (x) => x, 2)
+	);
 
 	return sequence.map((isGo) => {
 		const type: StimulusType = isGo ? 'go' : 'nogo';
@@ -88,6 +92,7 @@ export function computeSummary(
 	}
 
 	const totalCorrect = hits + correctRejections;
+	const cleaned = cleanRTs(hitRTs);
 
 	return {
 		type: 'go-nogo',
@@ -98,11 +103,13 @@ export function computeSummary(
 		correctRejections,
 		commissionErrors,
 		omissionErrors,
-		meanRtHits: mean(hitRTs),
-		sdRtHits: sd(hitRTs),
-		medianRtHits: median(hitRTs),
+		meanRtHits: mean(cleaned.kept),
+		sdRtHits: sd(cleaned.kept),
+		medianRtHits: median(cleaned.kept),
 		accuracy: results.length > 0 ? totalCorrect / results.length : 0,
 		dPrime: dPrime(hits, goTrials, commissionErrors, noGoTrials),
-		responseBias: responseBias(hits, goTrials, commissionErrors, noGoTrials)
+		responseBias: responseBias(hits, goTrials, commissionErrors, noGoTrials),
+		anticipations: cleaned.anticipations,
+		rtOutliersExcluded: cleaned.outliers
 	};
 }

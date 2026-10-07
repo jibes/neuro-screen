@@ -1,10 +1,28 @@
 import { createSession, getLatestSession, saveTestRun, db } from './database.js';
 import type { Session, TestRun, TrialData } from './models.js';
 import { evaluateEnvironment, type EnvironmentInfo } from '../core/environment-check.js';
+import { computeQualityFlags } from '../core/quality.js';
+import { isTouchDevice } from '../core/device.js';
 
 let currentSession = $state<Session | null>(null);
 let initPromise: Promise<Session | null> | null = null;
 let environmentGetter: (() => Promise<EnvironmentInfo>) | null = null;
+let pauseCount = 0;
+/** Quality flags of the most recently saved run (shown on the results card) */
+let lastQualityFlags = $state<string[]>([]);
+
+export function getLastQualityFlags(): string[] {
+	return lastQualityFlags;
+}
+
+/** Called by TestShell: reset when a test starts, increment on every pause */
+export function resetPauseCount(): void {
+	pauseCount = 0;
+	lastQualityFlags = [];
+}
+export function notePause(): void {
+	pauseCount++;
+}
 
 export function getSession(): Session | null {
 	return currentSession;
@@ -39,7 +57,9 @@ export async function waitForSession(): Promise<Session | null> {
 	if (currentSession) return currentSession;
 	if (!initPromise && environmentGetter) startSessionInit(environmentGetter);
 	if (initPromise) return await initPromise;
-	return null;
+	// Child components mount before the layout starts the init (full page load):
+	// fall back to the latest stored session
+	return await resumeSession();
 }
 
 /** Forget the current session (e.g. after all data was deleted); a new one is created on demand. */
@@ -87,7 +107,7 @@ export function isTestCompleted(testId: string): boolean {
  * @returns true if saved
  */
 export async function saveRunToSession(
-	run: Omit<TestRun, 'id' | 'sessionId' | 'environmentWarnings'>,
+	run: Omit<TestRun, 'id' | 'sessionId' | 'environmentWarnings' | 'qualityFlags'>,
 	trials: Omit<TrialData, 'id' | 'testRunId'>[]
 ): Promise<boolean> {
 	const session = await waitForSession();
@@ -99,8 +119,16 @@ export async function saveRunToSession(
 		: [];
 	// Record the colour scheme: stimulus contrast differs between light and dark mode
 	const displayTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+	const qualityFlags = computeQualityFlags(run.summary, { pauses: pauseCount, touch: isTouchDevice() });
+	lastQualityFlags = qualityFlags;
 	await saveTestRun(
-		{ ...run, config: { ...run.config, displayTheme }, sessionId: session.id, environmentWarnings },
+		{
+			...run,
+			config: { ...run.config, displayTheme, pauseCount },
+			sessionId: session.id,
+			environmentWarnings,
+			qualityFlags
+		},
 		trials
 	);
 	markTestCompleted(run.testId);

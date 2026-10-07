@@ -199,7 +199,8 @@ export function createTrialRunner() {
 					responseKey: response?.key ?? null,
 					stimulusOnset,
 					responseTimestamp: response?.timestamp ?? null,
-					customData: evaluation.customData
+					// Input modality matters for RT norms (keyboard vs. touch)
+					customData: { ...evaluation.customData, inputType: response?.type ?? null }
 				};
 
 				lastOutcome = outcome;

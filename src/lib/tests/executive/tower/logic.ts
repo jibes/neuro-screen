@@ -48,6 +48,9 @@ export function computeSummary(results: TowerProblemResult[]): TowerSummary {
 		excessMoves: totalMoves - optimalMoves,
 		meanPlanningTime: mean(planningTimes),
 		meanExecutionTime: mean(executionTimes),
-		ruleViolations: violations
+		ruleViolations: violations,
+		problemsSolvedOptimally: results.filter((r) => r.solvedOptimally).length,
+		meanPlanningTimeSolved: mean(solved.map((r) => r.planningTimeMs)),
+		timeouts: results.filter((r) => r.timedOut).length
 	};
 }

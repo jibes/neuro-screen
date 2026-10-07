@@ -9,6 +9,8 @@ export const WCST_CONFIG = {
 	instructions: i.tests.wcst.instructions,
 
 	maxTrials: 128,
+	/** Fixed seed: identical card order for every administration */
+	deckSeed: 1993,
 	maxCategories: 6,
 	correctToSwitch: 10,
 	ruleSequence: ['color', 'shape', 'number'] as const,

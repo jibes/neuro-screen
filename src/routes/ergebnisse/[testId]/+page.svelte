@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n/index.js';
-	import { getTestRun, getTrials } from '$lib/db/database.js';
+	import { getTestRun, getTrials, getLatestTestRun } from '$lib/db/database.js';
 	import { trialsToCSV, downloadFile } from '$lib/db/export.js';
 	import type { TestRun, TrialData } from '$lib/db/models.js';
 	import { getTestName } from '$lib/tests/registry.js';
@@ -13,6 +13,8 @@
 	let testRun = $state<TestRun | null>(null);
 	let trials = $state<TrialData[]>([]);
 	let loading = $state(true);
+	/** Completion time of the latest Trail Making A in the same session (for B − A, B/A) */
+	let trailA = $state<number | null>(null);
 
 	const testId = $derived(Number(page.params.testId));
 
@@ -21,6 +23,10 @@
 			testRun = (await getTestRun(testId)) ?? null;
 			if (testRun?.id) {
 				trials = await getTrials(testRun.id);
+				if (testRun.testId === 'trail-making-b') {
+					const a = await getLatestTestRun(testRun.sessionId, 'trail-making-a');
+					if (a?.summary.type === 'trail-making') trailA = a.summary.completionTimeMs;
+				}
 			}
 		}
 		loading = false;
@@ -51,166 +57,145 @@
 	function formatSummaryEntries(run: TestRun): Array<{ label: string; value: string }> {
 		const s = run.summary;
 		const entries: Array<{ label: string; value: string }> = [];
+		const ms = (x: number) => `${x.toFixed(0)} ms`;
+		const pct = (x: number) => `${(x * 100).toFixed(1)} %`;
+		const add = (label: string, value: string | number) => entries.push({ label, value: String(value) });
 
 		switch (s.type) {
 			case 'go-nogo':
-				entries.push(
-					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
-					{ label: 'Go-Durchgänge', value: `${s.goTrials}` },
-					{ label: 'No-Go-Durchgänge', value: `${s.noGoTrials}` },
-					{ label: 'Treffer', value: `${s.hits}` },
-					{ label: 'Korrekte Zurückweisungen', value: `${s.correctRejections}` },
-					{ label: i.results.commissionErrors, value: `${s.commissionErrors}` },
-					{ label: i.results.omissionErrors, value: `${s.omissionErrors}` },
-					{ label: `RT ${i.common.mean}`, value: `${s.meanRtHits.toFixed(0)} ms` },
-					{ label: `RT ${i.common.median}`, value: `${s.medianRtHits.toFixed(0)} ms` },
-					{ label: `RT ${i.common.sd}`, value: `${s.sdRtHits.toFixed(0)} ms` },
-					{ label: i.common.accuracy, value: `${(s.accuracy * 100).toFixed(1)}%` },
-					{ label: i.results.dPrime, value: s.dPrime.toFixed(2) },
-					{ label: 'Response Bias (c)', value: s.responseBias.toFixed(2) }
-				);
+				add('Durchgänge (Go / No-Go)', `${s.goTrials} / ${s.noGoTrials}`);
+				add('Treffer', `${s.hits} / ${s.goTrials}`);
+				add(i.results.omissionErrors, s.omissionErrors);
+				add(i.results.commissionErrors, `${s.commissionErrors} / ${s.noGoTrials}`);
+				add(i.common.accuracy, pct(s.accuracy));
+				add(`RT Treffer ${i.common.mean} ± SD`, `${ms(s.meanRtHits)} ± ${s.sdRtHits.toFixed(0)}`);
+				add(`RT Treffer ${i.common.median}`, ms(s.medianRtHits));
+				add(i.results.dPrime, s.dPrime.toFixed(2));
+				add('Antworttendenz (c)', s.responseBias.toFixed(2));
+				add('Ausgeschlossen (Antizipationen / Ausreißer)', `${s.anticipations} / ${s.rtOutliersExcluded}`);
 				break;
 			case 'flanker':
-				entries.push(
-					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
-					{ label: 'RT kongruent', value: `${s.meanRtCongruent.toFixed(0)} ms` },
-					{ label: 'RT inkongruent', value: `${s.meanRtIncongruent.toFixed(0)} ms` },
-					{ label: i.results.flankerEffect, value: `${s.flankerEffect.toFixed(0)} ms` },
-					{ label: 'Fehler (kongruent)', value: `${s.errorsCongruent}` },
-					{ label: 'Fehler (inkongruent)', value: `${s.errorsIncongruent}` },
-					{ label: i.common.accuracy, value: `${(s.accuracy * 100).toFixed(1)}%` }
-				);
-				break;
-			case 'digit-span':
-				entries.push(
-					{ label: i.results.forwardSpan, value: `${s.forwardSpan}` },
-					{ label: 'Korrekte Durchgänge', value: `${s.forwardTrialsCorrect}` },
-					{ label: 'Gesamtdurchgänge', value: `${s.forwardTotalTrials}` },
-					{ label: 'Score', value: `${s.forwardScore}` }
-				);
+				add(i.results.flankerEffect + ' (Mittelwert)', ms(s.flankerEffect));
+				add(i.results.flankerEffect + ' (Median)', ms(s.flankerEffectMedian));
+				add('RT kongruent (M / Md)', `${ms(s.meanRtCongruent)} / ${ms(s.medianRtCongruent)}`);
+				add('RT inkongruent (M / Md)', `${ms(s.meanRtIncongruent)} / ${ms(s.medianRtIncongruent)}`);
+				add('Fehler kongruent / inkongruent', `${s.errorsCongruent} / ${s.errorsIncongruent}`);
+				add('Keine Antwort', s.misses);
+				add(i.common.accuracy, pct(s.accuracy));
+				add('Ausgeschlossen (Antizipationen / Ausreißer)', `${s.anticipations} / ${s.rtOutliersExcluded}`);
 				break;
 			case 'stroop':
-				entries.push(
-					{ label: 'RT kongruent', value: `${s.meanRtCongruent.toFixed(0)} ms` },
-					{ label: 'RT inkongruent', value: `${s.meanRtIncongruent.toFixed(0)} ms` },
-					{ label: 'RT neutral', value: `${s.meanRtNeutral.toFixed(0)} ms` },
-					{ label: i.results.stroopEffect, value: `${s.stroopEffect.toFixed(0)} ms` },
-					{ label: 'Interferenz', value: `${s.stroopInterference.toFixed(0)} ms` },
-					{ label: 'Fazilitation', value: `${s.stroopFacilitation.toFixed(0)} ms` },
-					{ label: 'Fehler (kongruent)', value: `${s.errorsCongruent}` },
-					{ label: 'Fehler (inkongruent)', value: `${s.errorsIncongruent}` },
-					{ label: 'Fehler (neutral)', value: `${s.errorsNeutral}` },
-					{ label: i.common.accuracy, value: `${(s.accuracy * 100).toFixed(1)}%` }
-				);
+				add(i.results.stroopEffect + ' (inkongruent − kongruent)', ms(s.stroopEffect));
+				add('Interferenz (inkongruent − neutral)', ms(s.stroopInterference));
+				add('Fazilitation (neutral − kongruent)', ms(s.stroopFacilitation));
+				add('RT kongruent (M / Md)', `${ms(s.meanRtCongruent)} / ${ms(s.medianRtCongruent)}`);
+				add('RT inkongruent (M / Md)', `${ms(s.meanRtIncongruent)} / ${ms(s.medianRtIncongruent)}`);
+				add('RT neutral (M / Md)', `${ms(s.meanRtNeutral)} / ${ms(s.medianRtNeutral)}`);
+				add('Fehler kongr. / inkongr. / neutral', `${s.errorsCongruent} / ${s.errorsIncongruent} / ${s.errorsNeutral}`);
+				add('Keine Antwort', s.misses);
+				add(i.common.accuracy, pct(s.accuracy));
+				add('Ausgeschlossen (Antizipationen / Ausreißer)', `${s.anticipations} / ${s.rtOutliersExcluded}`);
 				break;
 			case 'n-back':
-				entries.push(
-					{ label: 'N-Level', value: `${s.nLevel}` },
-					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
-					{ label: i.results.hits, value: `${s.hits}` },
-					{ label: i.results.falseAlarms, value: `${s.falseAlarms}` },
-					{ label: i.results.misses, value: `${s.misses}` },
-					{ label: `RT ${i.common.mean}`, value: `${s.meanRtHits.toFixed(0)} ms` },
-					{ label: i.results.dPrime, value: s.dPrime.toFixed(2) },
-					{ label: i.common.accuracy, value: `${(s.accuracy * 100).toFixed(1)}%` }
-				);
+				add('Stufe', `${s.nLevel}-Back`);
+				add(i.results.hits, `${s.hits} / ${s.hits + s.misses}`);
+				add(i.results.falseAlarms, s.falseAlarms);
+				add(i.results.dPrime, s.dPrime.toFixed(2));
+				add(i.common.accuracy, pct(s.accuracy));
+				add(`RT Treffer (M / Md)`, `${ms(s.meanRtHits)} / ${ms(s.medianRtHits)}`);
 				break;
 			case 'cpt':
-				entries.push(
-					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
-					{ label: 'Target-Durchgänge', value: `${s.targetTrials}` },
-					{ label: i.results.hits, value: `${s.hits}` },
-					{ label: i.results.commissionErrors, value: `${s.commissionErrors}` },
-					{ label: i.results.omissionErrors, value: `${s.omissionErrors}` },
-					{ label: `RT ${i.common.mean}`, value: `${s.meanRtHits.toFixed(0)} ms` },
-					{ label: `RT ${i.common.sd}`, value: `${s.sdRtHits.toFixed(0)} ms` },
-					{ label: i.results.dPrime, value: s.dPrime.toFixed(2) },
-					{ label: 'Variabilitätsindex (CV)', value: s.variabilityIndex.toFixed(2) },
-					{ label: 'RT pro Block', value: s.rtByBlock.map(r => r.toFixed(0)).join(', ') + ' ms' }
-				);
+				add(i.results.hits, `${s.hits} / ${s.targetTrials}`);
+				add(i.results.omissionErrors, s.omissionErrors);
+				add(i.results.commissionErrors, s.commissionErrors);
+				add(i.results.dPrime, s.dPrime.toFixed(2));
+				add('Antworttendenz (c)', s.responseBias.toFixed(2));
+				add(`RT Treffer ${i.common.mean} ± SD`, `${ms(s.meanRtHits)} ± ${s.sdRtHits.toFixed(0)}`);
+				add('Variabilität (CV = SD/M)', s.variabilityIndex.toFixed(3));
+				add('RT pro Block', s.rtByBlock.map((r) => r.toFixed(0)).join(' · ') + ' ms');
+				add('Auslassungen pro Block', s.omissionsByBlock.join(' · '));
+				add('Kommissionen pro Block', s.commissionsByBlock.join(' · '));
+				add('Ausgeschlossen (Antizipationen / Ausreißer)', `${s.anticipations} / ${s.rtOutliersExcluded}`);
+				break;
+			case 'digit-span':
+				add('Längste Spanne vorwärts / rückwärts', `${s.forwardSpan} / ${s.backwardSpan}`);
+				add('Rohwert vorwärts', `${s.forwardScore} / ${s.forwardTotalTrials}`);
+				add('Rohwert rückwärts', `${s.backwardScore} / ${s.backwardTotalTrials}`);
+				add('Gesamtrohwert', s.forwardScore + s.backwardScore);
 				break;
 			case 'corsi':
-				entries.push(
-					{ label: 'Vorwärtsspanne', value: `${s.forwardSpan}` },
-					{ label: 'Vorwärts-Score', value: `${s.forwardScore}` },
-					{ label: 'Gesamt-Score', value: `${s.totalScore}` },
-					{ label: 'Mittlere Antwortzeit', value: `${s.meanResponseTime.toFixed(0)} ms` }
-				);
+				add('Blockspanne vorwärts / rückwärts', `${s.forwardSpan} / ${s.backwardSpan}`);
+				add('Gesamtscore vorwärts / rückwärts (Spanne × korrekte Folgen)', `${s.forwardScore} / ${s.backwardScore}`);
+				add('Mittlere Antwortzeit', ms(s.meanResponseTime));
 				break;
 			case 'symbol-digit':
-				entries.push(
-					{ label: 'Korrekt', value: `${s.totalCorrect}` },
-					{ label: 'Versucht', value: `${s.totalAttempted}` },
-					{ label: 'Fehler', value: `${s.totalErrors}` },
-					{ label: 'Zeitlimit', value: `${s.timeLimit} s` },
-					{ label: 'Throughput', value: `${s.throughput.toFixed(2)} / s` }
-				);
+				add('Korrekt', s.totalCorrect);
+				add('Bearbeitet', s.totalAttempted);
+				add('Fehler', s.totalErrors);
+				add('Zeitlimit', `${s.timeLimit} s`);
+				add('Korrekte pro Sekunde', s.throughput.toFixed(2));
 				break;
 			case 'trail-making':
-				entries.push(
-					{ label: 'Variante', value: `Trail Making ${s.variant}` },
-					{ label: 'Gesamtzeit', value: `${(s.completionTimeMs / 1000).toFixed(1)} s` },
-					{ label: 'Fehler', value: `${s.errors}` },
-					{ label: 'Segmentzeiten', value: s.pathSegmentTimes.map(t => (t / 1000).toFixed(1)).join(', ') + ' s' }
-				);
+				add('Variante', `Trail Making ${s.variant}`);
+				add('Gesamtzeit', `${(s.completionTimeMs / 1000).toFixed(1)} s`);
+				add('Fehler', s.errors);
+				if (s.variant === 'B' && trailA) {
+					add('B − A (Differenz)', `${((s.completionTimeMs - trailA) / 1000).toFixed(1)} s`);
+					add('B / A (Quotient)', (s.completionTimeMs / trailA).toFixed(2));
+				}
+				add('Segmentzeiten', s.pathSegmentTimes.map((t) => (t / 1000).toFixed(1)).join(' · ') + ' s');
 				break;
 			case 'wcst':
-				entries.push(
-					{ label: 'Gesamtdurchgänge', value: `${s.totalTrials}` },
-					{ label: 'Kategorien', value: `${s.categoriesCompleted}` },
-					{ label: 'Gesamtfehler', value: `${s.totalErrors}` },
-					{ label: 'Perseverative Antworten', value: `${s.perseverativeResponses}` },
-					{ label: 'Perseverative Fehler', value: `${s.perseverativeErrors}` },
-					{ label: 'Nicht-perseverative Fehler', value: `${s.nonPerseverativeErrors}` },
-					{ label: 'Konzeptuelle Antworten', value: `${s.conceptualLevelResponses}` },
-					{ label: 'Failure to Maintain Set', value: `${s.failureToMaintainSet}` },
-					{ label: 'Trials bis 1. Kategorie', value: `${s.trialsToFirstCategory}` }
-				);
+				add('Kategorien', s.categoriesCompleted);
+				add('Durchgänge', s.totalTrials);
+				add('Fehler gesamt', `${s.totalErrors} (${pct(s.totalTrials ? s.totalErrors / s.totalTrials : 0)})`);
+				add('Perseverative Fehler', `${s.perseverativeErrors} (${pct(s.totalTrials ? s.perseverativeErrors / s.totalTrials : 0)})`);
+				add('Perseverative Antworten', s.perseverativeResponses);
+				add('Nicht-perseverative Fehler', s.nonPerseverativeErrors);
+				add('Konzeptuelle Antworten', `${s.conceptualLevelResponses} (${pct(s.totalTrials ? s.conceptualLevelResponses / s.totalTrials : 0)})`);
+				add('Failure to Maintain Set', s.failureToMaintainSet);
+				add('Durchgänge bis 1. Kategorie', s.trialsToFirstCategory);
 				break;
 			case 'tower':
-				entries.push(
-					{ label: 'Gelöst', value: `${s.problemsSolved} / ${s.totalProblems}` },
-					{ label: 'Gesamtzüge', value: `${s.totalMoves}` },
-					{ label: 'Optimale Züge', value: `${s.optimalMoves}` },
-					{ label: 'Überzählige Züge', value: `${s.excessMoves}` },
-					{ label: 'Mittlere Planungszeit', value: `${(s.meanPlanningTime / 1000).toFixed(1)} s` },
-					{ label: 'Mittlere Ausführungszeit', value: `${(s.meanExecutionTime / 1000).toFixed(1)} s` },
-					{ label: 'Regelverstöße', value: `${s.ruleViolations}` }
-				);
+				add('Mit Minimalzügen gelöst', `${s.problemsSolvedOptimally} / ${s.totalProblems}`);
+				add('Gelöst', `${s.problemsSolved} / ${s.totalProblems}`);
+				add('Züge (gesamt / minimal)', `${s.totalMoves} / ${s.optimalMoves}`);
+				add('Überzählige Züge', s.excessMoves);
+				add('Planungszeit (alle / gelöste)', `${(s.meanPlanningTime / 1000).toFixed(1)} s / ${(s.meanPlanningTimeSolved / 1000).toFixed(1)} s`);
+				add('Ausführungszeit', `${(s.meanExecutionTime / 1000).toFixed(1)} s`);
+				add('Regelverstöße', s.ruleViolations);
+				add('Zeitüberschreitungen', s.timeouts);
 				break;
 			case 'word-list':
-				entries.push(
-					{ label: 'Lerndurchgänge', value: `${s.learningTrials}` },
-					{ label: 'Wörter pro Trial', value: s.wordsPerTrial.join(', ') },
-					{ label: 'Gelernt (letzter Trial)', value: `${s.totalLearned}` },
-					{ label: 'Lernsteigung', value: s.learningSlope.toFixed(2) },
-					{ label: 'Kurzabruf', value: `${s.shortDelayFreeRecall}` },
-					{ label: 'Rekognition Treffer', value: `${s.recognitionHits}` },
-					{ label: 'Rekognition Falsche Alarme', value: `${s.recognitionFalseAlarms}` },
-					{ label: "d' Rekognition", value: s.dPrimeRecognition.toFixed(2) }
-				);
+				add('Summe A1–A5', s.totalRecall);
+				add('Wörter pro Durchgang (A1–A5)', s.wordsPerTrial.join(' – '));
+				add('Lernzuwachs (Σ − 5 × A1)', s.learningOverTrials);
+				add('Lernsteigung', s.learningSlope.toFixed(2));
+				add('Liste B', s.interferenceRecall);
+				add('A6 (nach Interferenz)', s.shortDelayFreeRecall);
+				add('Proaktive Interferenz (B/A1)', pct(s.proactiveInterference));
+				add('Retroaktive Interferenz (A6/A5)', pct(s.retroactiveInterference));
+				add('Intrusionen', s.intrusions);
+				add('Primacy / Recency', `${pct(s.primacy)} / ${pct(s.recency)}`);
+				add('Darbietung', s.presentationMode === 'auditory' ? 'gesprochen' : 'visuell');
 				break;
 			case 'delayed-recall':
-				entries.push(
-					{ label: 'Verzögerter Abruf', value: `${s.delayedRecall} / ${s.totalItems}` },
-					{ label: 'Unmittelbarer Abruf (letzter Lerndurchgang)', value: `${s.immediateRecall} / ${s.totalItems}` },
-					{ label: 'Behaltenrate', value: `${(s.retentionRate * 100).toFixed(0)}%` },
-					{ label: 'Verzögerung', value: `${s.delayMinutes} min` },
-					{ label: 'Intrusionsfehler', value: `${s.intrusionErrors}` }
-				);
+				add('Verzögerter Abruf (A7)', `${s.delayedRecall} / ${s.totalItems}`);
+				add('A5 / A6 (Wortliste)', `${s.immediateRecall} / ${s.shortDelayRecall}`);
+				add('Behaltensquote (A7/A5)', pct(s.retentionRate));
+				add('Verzögerung', `${s.delayMinutes} min`);
+				add('Intrusionen', s.intrusionErrors);
+				add('Wiedererkennung: Treffer', `${s.recognitionHits} / ${s.totalItems}`);
+				add('Wiedererkennung: Falsch-Positive (davon Liste B)', `${s.recognitionFalseAlarms} (${s.recognitionListBErrors})`);
+				add('Diskrimination (Treffer − FP)', s.recognitionDiscriminability);
+				add("d' Wiedererkennung", s.dPrimeRecognition.toFixed(2));
 				break;
 			case 'rey-figure':
-				entries.push(
-					{ label: "d' sofort", value: s.immediateDPrime.toFixed(2) },
-					{ label: 'Treffer sofort', value: `${s.immediateHits} / ${s.immediateTargets}` },
-					{ label: 'Falsche Alarme sofort', value: `${s.immediateFalseAlarms} / ${s.immediateDistractors}` },
-					{ label: 'Zeit sofort', value: `${(s.immediateTimeMs / 1000).toFixed(1)} s` },
-					{ label: "d' verzögert", value: s.delayedDPrime.toFixed(2) },
-					{ label: 'Treffer verzögert', value: `${s.delayedHits} / ${s.delayedTargets}` },
-					{ label: 'Falsche Alarme verzögert', value: `${s.delayedFalseAlarms} / ${s.delayedDistractors}` },
-					{ label: 'Zeit verzögert', value: `${(s.delayedTimeMs / 1000).toFixed(1)} s` },
-					{ label: 'Verzögerung', value: `${s.delayMinutes} min` }
-				);
+				add("d' sofort", s.immediateDPrime.toFixed(2));
+				add('Treffer / Falsch-Positive sofort', `${s.immediateHits}/${s.immediateTargets} · ${s.immediateFalseAlarms}/${s.immediateDistractors}`);
+				add("d' verzögert", s.delayedDPrime.toFixed(2));
+				add('Treffer / Falsch-Positive verzögert', `${s.delayedHits}/${s.delayedTargets} · ${s.delayedFalseAlarms}/${s.delayedDistractors}`);
+				add('Verzögerung', `${s.delayMinutes} min`);
 				break;
 			default:
 				entries.push(...genericEntries(s as unknown as Record<string, unknown>));
@@ -266,6 +251,17 @@
 				</button>
 			{/if}
 		</div>
+
+		{#if testRun.qualityFlags?.length}
+			<div class="bg-red-50 border border-red-100 rounded-lg px-5 py-3 mb-4 text-sm text-red-600">
+				<p class="font-medium mb-1">Hinweise zur Datenqualität – mit Vorsicht interpretieren</p>
+				<ul class="list-disc pl-5">
+					{#each testRun.qualityFlags as flag}
+						<li>{flag}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		{#if testRun.environmentWarnings?.length}
 			<div class="bg-amber-50 border border-amber-200 rounded-lg px-5 py-3 mb-6 text-sm text-amber-800">

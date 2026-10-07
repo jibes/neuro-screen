@@ -12,6 +12,39 @@ export function median(values: number[]): number {
 	return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+/** Responses faster than this are anticipations, not reactions to the stimulus (ms) */
+export const ANTICIPATION_THRESHOLD_MS = 150;
+
+/** Outlier criterion for RT trimming, in SDs from the (individual, per-condition) mean */
+export const RT_OUTLIER_SD = 2.5;
+
+export interface CleanedRTs {
+	/** RTs retained for analysis */
+	kept: number[];
+	/** Number of RTs below ANTICIPATION_THRESHOLD_MS */
+	anticipations: number;
+	/** Number of RTs beyond ±RT_OUTLIER_SD after removing anticipations */
+	outliers: number;
+}
+
+/**
+ * Standard RT cleaning: drop anticipations, then trim values beyond ±2.5 SD of the mean
+ * (Ratcliff, 1993; Berger & Kiefer, 2021). Trimming is skipped for fewer than 5 values.
+ */
+export function cleanRTs(
+	rts: number[],
+	minRt: number = ANTICIPATION_THRESHOLD_MS,
+	sdCriterion: number = RT_OUTLIER_SD
+): CleanedRTs {
+	const valid = rts.filter((rt) => rt >= minRt);
+	const anticipations = rts.length - valid.length;
+	if (valid.length < 5) return { kept: valid, anticipations, outliers: 0 };
+	const m = mean(valid);
+	const s = sd(valid);
+	const kept = s > 0 ? valid.filter((rt) => Math.abs(rt - m) <= sdCriterion * s) : valid;
+	return { kept, anticipations, outliers: valid.length - kept.length };
+}
+
 /** Calculate standard deviation (sample) */
 export function sd(values: number[]): number {
 	if (values.length < 2) return 0;

@@ -18,6 +18,8 @@ export interface TestRun {
 	config: Record<string, unknown>;
 	summary: TestSummary;
 	environmentWarnings: string[];
+	/** Data-quality warnings (e.g. near-chance accuracy, many omissions) */
+	qualityFlags?: string[];
 }
 
 export interface TrialData {
@@ -67,6 +69,10 @@ export interface GoNoGoSummary {
 	accuracy: number;
 	dPrime: number;
 	responseBias: number;
+	/** Go responses faster than 150 ms (excluded from RT statistics) */
+	anticipations: number;
+	/** Hit RTs beyond ±2.5 SD (excluded from RT statistics) */
+	rtOutliersExcluded: number;
 }
 
 export interface FlankerSummary {
@@ -77,9 +83,16 @@ export interface FlankerSummary {
 	meanRtCongruent: number;
 	meanRtIncongruent: number;
 	flankerEffect: number;
+	medianRtCongruent: number;
+	medianRtIncongruent: number;
+	/** Median-based flanker effect (robust to skew) */
+	flankerEffectMedian: number;
 	errorsCongruent: number;
 	errorsIncongruent: number;
+	misses: number;
 	accuracy: number;
+	anticipations: number;
+	rtOutliersExcluded: number;
 }
 
 export interface DigitSpanSummary {
@@ -109,7 +122,13 @@ export interface StroopSummary {
 	errorsCongruent: number;
 	errorsIncongruent: number;
 	errorsNeutral: number;
+	medianRtCongruent: number;
+	medianRtIncongruent: number;
+	medianRtNeutral: number;
+	misses: number;
 	accuracy: number;
+	anticipations: number;
+	rtOutliersExcluded: number;
 }
 
 export interface NBackSummary {
@@ -121,8 +140,10 @@ export interface NBackSummary {
 	misses: number;
 	correctRejections: number;
 	meanRtHits: number;
+	medianRtHits: number;
 	dPrime: number;
 	accuracy: number;
+	anticipations: number;
 }
 
 export interface CPTSummary {
@@ -135,8 +156,13 @@ export interface CPTSummary {
 	meanRtHits: number;
 	sdRtHits: number;
 	rtByBlock: number[];
+	omissionsByBlock: number[];
+	commissionsByBlock: number[];
 	dPrime: number;
+	responseBias: number;
 	variabilityIndex: number;
+	anticipations: number;
+	rtOutliersExcluded: number;
 }
 
 export interface CorsiSummary {
@@ -189,28 +215,61 @@ export interface TowerSummary {
 	meanPlanningTime: number;
 	meanExecutionTime: number;
 	ruleViolations: number;
+	/** Problems solved in the minimum number of moves */
+	problemsSolvedOptimally: number;
+	/** Initial planning time on correctly solved problems only */
+	meanPlanningTimeSolved: number;
+	timeouts: number;
 }
 
 export interface WordListSummary {
 	type: 'word-list';
 	learningTrials: number;
+	/** Correct words per learning trial A1–A5 */
 	wordsPerTrial: number[];
+	/** A5 */
 	totalLearned: number;
+	/** Σ A1–A5 (RAVLT total learning) */
+	totalRecall: number;
 	learningSlope: number;
+	/** Learning over trials: Σ A1–A5 − 5 × A1 */
+	learningOverTrials: number;
+	/** List B recall */
+	interferenceRecall: number;
+	/** B / A1 (lower = stronger proactive interference) */
+	proactiveInterference: number;
+	/** A6 / A5 (lower = stronger retroactive interference) */
+	retroactiveInterference: number;
+	/** A6: recall of list A after list B */
 	shortDelayFreeRecall: number;
-	recognitionHits: number;
-	recognitionFalseAlarms: number;
-	dPrimeRecognition: number;
+	/** Non-list words over all recall trials */
+	intrusions: number;
+	/** Proportion recalled of the first / last 5 list positions over A1–A5 */
+	primacy: number;
+	recency: number;
+	presentationMode: 'auditory' | 'visual';
 }
 
 export interface DelayedRecallSummary {
 	type: 'delayed-recall';
+	/** A5 of the word-list test */
 	immediateRecall: number;
+	/** A6 of the word-list test */
+	shortDelayRecall: number;
+	/** A7 */
 	delayedRecall: number;
+	/** A7 / A5 */
 	retentionRate: number;
 	delayMinutes: number;
 	totalItems: number;
 	intrusionErrors: number;
+	recognitionHits: number;
+	recognitionFalseAlarms: number;
+	/** "Yes" to list-B words (source confusion) */
+	recognitionListBErrors: number;
+	/** Hits − false alarms */
+	recognitionDiscriminability: number;
+	dPrimeRecognition: number;
 }
 
 export interface ReyFigureSummary {

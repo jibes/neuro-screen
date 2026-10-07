@@ -10,9 +10,12 @@ export const CORSI_CONFIG = {
 	startSpan: 2,
 	maxSpan: 9,
 	attemptsPerSpan: 2,
-	maxFailuresPerSpan: 2, // stop after 2 failures at the same span
-	blockHighlightDurationMs: 800,
-	interBlockIntervalMs: 300,
+	maxFailuresPerSpan: 2, // discontinue after both trials of a length are failed (Kessels et al., 2000)
+	practiceSpan: 2,
+	practiceTrials: 2,
+	// 1 block per second (Kessels et al., 2000)
+	blockHighlightDurationMs: 1000,
+	interBlockIntervalMs: 0,
 	feedbackDurationMs: 1000,
 
 	blockPositions: [

@@ -82,7 +82,7 @@
 		}
 	}
 
-	function completeProblem(solved: boolean) {
+	function completeProblem(solved: boolean, timedOut = false) {
 		const now = timer.now();
 		const planningTime = firstMoveMade ? firstMoveTime - problemStartTime : now - problemStartTime;
 		const executionTime = firstMoveMade ? now - firstMoveTime : 0;
@@ -93,6 +93,8 @@
 			planningTimeMs: planningTime,
 			executionTimeMs: executionTime,
 			solved,
+			solvedOptimally: solved && moves === currentProblem!.optimalMoves,
+			timedOut,
 			ruleViolations
 		});
 
@@ -114,7 +116,17 @@
 		firstMoveMade = false;
 		errorMessage = '';
 		problemStartTime = timer.now();
+		problemRemaining = Math.ceil(config.problemTimeLimitMs / 1000);
 	}
+
+	// Per-problem time limit (active time; pauses excluded)
+	let problemRemaining = $state(0);
+	const limitInterval = setInterval(() => {
+		if (!running || !currentProblem) return;
+		const elapsed = timer.now() - problemStartTime;
+		problemRemaining = Math.max(0, Math.ceil((config.problemTimeLimitMs - elapsed) / 1000));
+		if (elapsed >= config.problemTimeLimitMs) completeProblem(false, true);
+	}, 250);
 
 	async function finishTest() {
 		running = false;
@@ -161,7 +173,8 @@
 		if (!summary) return [];
 		return [
 			{ label: 'Gelöst', value: `${summary.problemsSolved}/${summary.totalProblems}`, highlight: true },
-			{ label: 'Überzüge', value: summary.excessMoves, highlight: true },
+			{ label: 'Mit Minimalzügen gelöst', value: `${summary.problemsSolvedOptimally}/${summary.totalProblems}`, highlight: true },
+			{ label: 'Überzüge', value: summary.excessMoves },
 			{ label: 'Planungszeit (Mittel)', value: `${summary.meanPlanningTime.toFixed(0)}`, unit: 'ms' },
 			{ label: 'Ausführungszeit (Mittel)', value: `${summary.meanExecutionTime.toFixed(0)}`, unit: 'ms' },
 			{ label: 'Regelverstöße', value: summary.ruleViolations }
@@ -171,6 +184,7 @@
 	onDestroy(() => {
 		running = false;
 		audio.destroy();
+		clearInterval(limitInterval);
 	});
 </script>
 
@@ -208,7 +222,7 @@
 
 				<!-- Current state -->
 				<div class="mb-4">
-					<p class="text-sm text-slate-400 mb-2">Aktuell (Zug {moves}/{currentProblem.maxMoves}):</p>
+					<p class="text-sm text-slate-400 mb-2">Aktuell (Zug {moves}/{currentProblem.maxMoves} · minimal {currentProblem.optimalMoves} · noch {problemRemaining} s):</p>
 					<div class="flex gap-3 sm:gap-8 justify-center">
 						{#each currentState.pegs as peg, pegIdx}
 							<button

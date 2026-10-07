@@ -65,7 +65,7 @@
 			case 'flanker':
 				return `Flanker-Effekt: ${s.flankerEffect.toFixed(0)} ms, Genauigkeit: ${(s.accuracy * 100).toFixed(0)}%`;
 			case 'digit-span':
-				return `Spanne: ${s.forwardSpan}`;
+				return `Spanne vorwärts ${s.forwardSpan}, rückwärts ${s.backwardSpan}`;
 			case 'stroop':
 				return `Stroop-Effekt: ${s.stroopEffect.toFixed(0)} ms, Genauigkeit: ${(s.accuracy * 100).toFixed(0)}%`;
 			case 'n-back':
@@ -73,7 +73,7 @@
 			case 'cpt':
 				return `d' = ${s.dPrime.toFixed(2)}, RT: ${s.meanRtHits.toFixed(0)} ms`;
 			case 'corsi':
-				return `Spanne: ${s.forwardSpan}, Score: ${s.totalScore}`;
+				return `Blockspanne vorwärts ${s.forwardSpan}, rückwärts ${s.backwardSpan}`;
 			case 'symbol-digit':
 				return `Korrekt: ${s.totalCorrect}, Throughput: ${s.throughput.toFixed(2)}/s`;
 			case 'trail-making':
@@ -81,11 +81,11 @@
 			case 'wcst':
 				return `Kategorien: ${s.categoriesCompleted}, Perseverative Fehler: ${s.perseverativeErrors}`;
 			case 'tower':
-				return `Gelöst: ${s.problemsSolved}/${s.totalProblems}, Planungszeit: ${(s.meanPlanningTime / 1000).toFixed(1)} s`;
+				return `Minimal gelöst: ${s.problemsSolvedOptimally}/${s.totalProblems}, Planungszeit: ${(s.meanPlanningTime / 1000).toFixed(1)} s`;
 			case 'word-list':
-				return `Gelernt: ${s.totalLearned}, d' = ${s.dPrimeRecognition.toFixed(2)}`;
+				return `Σ A1–A5: ${s.totalRecall}, A6: ${s.shortDelayFreeRecall}`;
 			case 'delayed-recall':
-				return `Abruf: ${s.delayedRecall}/${s.totalItems}, Behaltenrate: ${(s.retentionRate * 100).toFixed(0)}%`;
+				return `A7: ${s.delayedRecall}/${s.totalItems}, Behaltensquote ${(s.retentionRate * 100).toFixed(0)} %, Wiedererkennung ${s.recognitionHits}/${s.totalItems}`;
 			case 'rey-figure':
 				return `d' sofort: ${s.immediateDPrime.toFixed(2)}, verzögert: ${s.delayedDPrime.toFixed(2)}`;
 			default:
@@ -153,6 +153,9 @@
 						</span>
 					</div>
 					<p class="text-sm text-slate-500">{getKeyMetric(run)}</p>
+					{#if run.qualityFlags?.length}
+						<p class="mt-1 text-xs text-red-600">&#9888; {run.qualityFlags.length} Hinweis{run.qualityFlags.length > 1 ? 'e' : ''} zur Datenqualität</p>
+					{/if}
 				</a>
 			{/each}
 		</div>

@@ -18,12 +18,14 @@ export const WORD_LIST_CONFIG = {
 		'NASE', 'FARBE', 'HAUS', 'FLUSS', 'TISCH'
 	],
 
+	/** List B (interference list) – also used as foils in the delayed recognition trial */
 	interferenceWords: [
 		'FENSTER', 'KIRCHE', 'FISCH', 'WOLKE', 'KUCHEN',
 		'BRIEF', 'LAMPE', 'STEIN', 'BLUME', 'MESSER',
 		'STUHL', 'PFERD', 'TURM', 'RADIO', 'BESEN'
 	],
 
+	/** Semantic/phonemic foils for recognition (delayed-recall test) */
 	distractorWords: [
 		'PAUKE', 'GARDINE', 'KLINGEL', 'MILCH', 'LEHRER',
 		'KINDER', 'STERN', 'WIESE', 'MÜTZE', 'HIRTE',

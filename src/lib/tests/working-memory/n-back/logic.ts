@@ -4,7 +4,7 @@ import type { NBackTrial } from './types.js';
 import type { NBackSummary } from '$lib/db/models.js';
 import { NBACK_CONFIG } from './config.js';
 import { pick, shuffled } from '$lib/utils/random.js';
-import { mean, dPrime } from '$lib/utils/statistics.js';
+import { mean, median, dPrime, cleanRTs } from '$lib/utils/statistics.js';
 
 export function generateNBackSequence(
 	count: number,
@@ -123,6 +123,7 @@ export function computeSummary(
 	}
 
 	const totalCorrect = hits + correctRejections;
+	const cleaned = cleanRTs(hitRTs);
 
 	return {
 		type: 'n-back',
@@ -132,8 +133,10 @@ export function computeSummary(
 		falseAlarms,
 		misses,
 		correctRejections,
-		meanRtHits: mean(hitRTs),
+		meanRtHits: mean(cleaned.kept),
+		medianRtHits: median(cleaned.kept),
 		dPrime: dPrime(hits, targetTrials, falseAlarms, nonTargetTrials),
-		accuracy: results.length > 0 ? totalCorrect / results.length : 0
+		accuracy: results.length > 0 ? totalCorrect / results.length : 0,
+		anticipations: cleaned.anticipations
 	};
 }

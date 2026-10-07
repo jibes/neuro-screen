@@ -9,6 +9,8 @@ export const TOWER_CONFIG = {
 	instructions: i.tests.tower.instructions,
 
 	pegCapacities: [3, 2, 1] as const,
+	/** Time limit per problem (TOL-DX: 2 min) */
+	problemTimeLimitMs: 120000,
 	discColors: ['rot', 'blau', 'gruen'] as const,
 	colorHex: {
 		rot: 'var(--color-stim-rot)',

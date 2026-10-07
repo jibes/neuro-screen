@@ -9,7 +9,8 @@
 	const links = [
 		{ href: `${base}/`, label: i.nav.home },
 		{ href: `${base}/umgebung`, label: i.nav.environment },
-		{ href: `${base}/ergebnisse`, label: i.nav.results }
+		{ href: `${base}/ergebnisse`, label: i.nav.results },
+		{ href: `${base}/methodik`, label: 'Methodik' }
 	];
 
 	/** Compare paths ignoring a trailing slash (the base root may be served as /repo or /repo/) */

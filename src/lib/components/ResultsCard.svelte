@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { t } from '$lib/i18n/index.js';
+	import { base } from '$app/paths';
+	import { getLastQualityFlags } from '$lib/db/session-store.svelte.js';
 
 	interface Metric {
 		label: string;
@@ -38,6 +40,21 @@
 				</div>
 			{/each}
 		</div>
+
+		{#if getLastQualityFlags().length > 0}
+			<div class="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+				<p class="font-medium mb-1">Hinweise zur Datenqualität</p>
+				<ul class="list-disc pl-5">
+					{#each getLastQualityFlags() as flag}
+						<li>{flag}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+
+		<p class="mt-4 text-xs text-slate-400">
+			Rohwerte ohne Normvergleich – keine Diagnose. <a href="{base}/methodik" class="underline hover:text-slate-600">Zur Methodik</a>
+		</p>
 
 		<div class="flex flex-wrap gap-3 mt-6 justify-end">
 			{#if onOverview}
