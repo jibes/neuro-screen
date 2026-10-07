@@ -4,7 +4,6 @@
 	"description": "Neuropsychologisches Screening-Tool mit 15 kognitiven Tests. Läuft offline, alle Daten bleiben auf dem Gerät.",
 	"lang": "de",
 	"dir": "ltr",
-	"id": "./",
 	"start_url": "./",
 	"scope": "./",
 	"display": "standalone",
