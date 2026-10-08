@@ -25,55 +25,62 @@
 		<p class="text-base sm:text-lg text-slate-500">{i.app.subtitle}</p>
 	</div>
 
-	<!-- Progress / next step -->
+	<!-- Progress / next step: stacked on phones, side by side from md -->
 	<section class="mb-10 rounded-xl border border-slate-200 bg-surface p-4 sm:p-5">
-		<div class="flex flex-wrap items-center justify-between gap-4">
-			<div class="min-w-0 flex-1">
-				<p class="text-sm text-slate-500">Fortschritt dieser Sitzung</p>
-				<p class="text-lg font-semibold text-slate-900">
+		<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-6">
+			<div class="min-w-0 md:flex-1">
+				<div class="flex items-baseline justify-between gap-3">
+					<p class="text-sm text-slate-500">Fortschritt dieser Sitzung</p>
+					<p class="text-sm tabular-nums text-slate-500">{Math.round((completedCount / ALL_TESTS.length) * 100)} %</p>
+				</div>
+				<p class="mt-0.5 text-lg font-semibold text-slate-900">
 					{completedCount} von {ALL_TESTS.length} Tests durchgeführt
 				</p>
 				<div
-					class="mt-2 h-2 w-full max-w-sm overflow-hidden rounded-full bg-slate-100"
+					class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100"
 					role="progressbar"
 					aria-valuemin={0}
 					aria-valuemax={ALL_TESTS.length}
 					aria-valuenow={completedCount}
+					aria-label="Fortschritt"
 				>
 					<div
 						class="h-full rounded-full bg-blue-600 transition-[width] duration-500"
 						style="width: {(completedCount / ALL_TESTS.length) * 100}%"
 					></div>
 				</div>
+				{#if nextOpen}
+					<p class="mt-2 text-xs text-slate-400">
+						Noch ca. {remainingMinutes} Minuten · Tests einzeln und in beliebiger Reihenfolge möglich
+					</p>
+				{/if}
 			</div>
-			<div class="flex flex-wrap gap-2">
+			<!-- DOM order: secondary first; column-reverse puts the primary action on top on phones -->
+			<div class="flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap md:shrink-0 md:justify-end">
 				<InstallButton />
 				<a
 					href="{base}/umgebung"
-					class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+					class="px-4 py-2.5 sm:py-2 text-center text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
 				>
 					{i.nav.environment}
 				</a>
 				{#if nextOpen}
 					<a
 						href={nextOpen.href}
-						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+						class="px-4 py-2.5 sm:py-2 text-center text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
 					>
 						{completedCount === 0 ? 'Mit erstem Test beginnen' : `Weiter: ${nextOpen.name}`}
 					</a>
 				{:else}
 					<a
 						href="{base}/ergebnisse"
-						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+						class="px-4 py-2.5 sm:py-2 text-center text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
 					>
 						Ergebnisse ansehen
 					</a>
 				{/if}
 			</div>
 		</div>
-		{#if nextOpen}
-			<p class="mt-3 text-xs text-slate-400">Verbleibende Dauer ca. {remainingMinutes} Minuten. Tests können einzeln und in beliebiger Reihenfolge durchgeführt werden.</p>
-		{/if}
 	</section>
 
 	{#each categories as category}

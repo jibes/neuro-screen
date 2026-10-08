@@ -30,7 +30,7 @@
 			<img src={favicon} alt="" class="h-6 w-6" />
 			{i.app.title}
 		</a>
-		<div class="order-3 sm:order-2 flex w-full sm:w-auto gap-4 sm:gap-6">
+		<div class="order-3 sm:order-2 flex flex-wrap w-full sm:w-auto gap-x-4 gap-y-1 sm:gap-x-6">
 			{#each links as link}
 				<a
 					href={link.href}
