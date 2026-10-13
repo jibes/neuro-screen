@@ -101,4 +101,4 @@ Pushes to `main` are built and published to GitHub Pages by `.github/workflows/d
 
 ## License
 
-[MIT](LICENSE)
+[GPL-3.0-or-later](LICENSE)
