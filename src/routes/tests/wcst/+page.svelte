@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WCST from '$lib/tests/executive/wcst/WCST.svelte';
+  import WCST from '$lib/tests/executive/wcst/WCST.svelte';
 </script>
 
 <WCST />

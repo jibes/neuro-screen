@@ -4,46 +4,51 @@ A browser-based neuropsychological screening platform. Runs 15 standardized cogn
 
 > **Disclaimer:** This tool is intended solely as a screening instrument and does not replace professional neuropsychological assessment.
 >
-> **Validation status:** all tests implement established paradigms, but these implementations are **not normed or validated**. Results are raw scores; see the in-app *Methodik* page for procedures, deviations from the original instruments and references.
+> **Validation status:** all tests implement established paradigms, but these implementations are **not normed or validated**. Results are raw scores; see the in-app _Methodik_ page for procedures, deviations from the original instruments and references.
 
 ---
 
 ## Tests
 
 ### Attention & Inhibition
-| Test | What it measures |
-|------|-----------------|
-| **Go/No-Go** | Response inhibition — react to green, withhold on red |
-| **Flanker** | Selective attention and interference control |
-| **Stroop** | Color–word interference and cognitive control |
-| **CPT** (Continuous Performance Test) | Sustained attention over 200 trials |
+
+| Test                                  | What it measures                                      |
+| ------------------------------------- | ----------------------------------------------------- |
+| **Go/No-Go**                          | Response inhibition — react to green, withhold on red |
+| **Flanker**                           | Selective attention and interference control          |
+| **Stroop**                            | Color–word interference and cognitive control         |
+| **CPT** (Continuous Performance Test) | Sustained attention over 200 trials                   |
 
 ### Working Memory
-| Test | What it measures |
-|------|-----------------|
-| **Digit Span** | Verbal short-term / working memory (forward and backward, WAIS-IV procedure) |
-| **Corsi Block** | Visuospatial span, forward and backward (Kessels et al., 2000 scoring) |
-| **N-Back** | Working memory updating and monitoring |
+
+| Test            | What it measures                                                             |
+| --------------- | ---------------------------------------------------------------------------- |
+| **Digit Span**  | Verbal short-term / working memory (forward and backward, WAIS-IV procedure) |
+| **Corsi Block** | Visuospatial span, forward and backward (Kessels et al., 2000 scoring)       |
+| **N-Back**      | Working memory updating and monitoring                                       |
 
 ### Processing Speed
-| Test | What it measures |
-|------|-----------------|
-| **Symbol Digit** | Psychomotor speed (90-second substitution task) |
-| **Trail Making A** | Visual scanning and sequencing speed |
+
+| Test               | What it measures                                            |
+| ------------------ | ----------------------------------------------------------- |
+| **Symbol Digit**   | Psychomotor speed (90-second substitution task)             |
+| **Trail Making A** | Visual scanning and sequencing speed                        |
 | **Trail Making B** | Cognitive flexibility (alternating number–letter sequences) |
 
 ### Executive Functions
-| Test | What it measures |
-|------|-----------------|
+
+| Test                                   | What it measures               |
+| -------------------------------------- | ------------------------------ |
 | **WCST** (Wisconsin Card Sorting Test) | Rule learning and set-shifting |
-| **Tower of London** | Planning and problem-solving |
+| **Tower of London**                    | Planning and problem-solving   |
 
 ### Memory
-| Test | What it measures |
-|------|-----------------|
-| **Word List** | Verbal learning, RAVLT procedure (A1–A5, list B, A6) |
-| **Delayed Recall** | Delayed recall (A7) and recognition with list-B and new foils |
-| **Figure Memory** | Visual recognition memory for figure elements (not the Rey-Osterrieth copy/recall test) |
+
+| Test               | What it measures                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| **Word List**      | Verbal learning, RAVLT procedure (A1–A5, list B, A6)                                    |
+| **Delayed Recall** | Delayed recall (A7) and recognition with list-B and new foils                           |
+| **Figure Memory**  | Visual recognition memory for figure elements (not the Rey-Osterrieth copy/recall test) |
 
 ---
 
@@ -58,7 +63,7 @@ A browser-based neuropsychological screening platform. Runs 15 standardized cogn
 - In-app methods documentation with references
 - Environment check to validate browser suitability before testing
 - Installable as an app (PWA) and fully usable offline
-- Fully localized in German
+- English and German UI and stimulus material (the language is stored with every run)
 
 ---
 
@@ -68,34 +73,47 @@ A browser-based neuropsychological screening platform. Runs 15 standardized cogn
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS v4](https://tailwindcss.com/)
 - [Dexie](https://dexie.org/) (IndexedDB wrapper)
-- [Vite](https://vite.dev/)
+- [Vite](https://vite.dev/), [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) (Workbox, prompt to update)
+- [Vitest](https://vitest.dev/), [Playwright](https://playwright.dev/), ESLint, Prettier
 - Deployed as a static site via `@sveltejs/adapter-static`
 
 ---
 
 ## Getting Started
 
+Requires Node 22 (see `.nvmrc`).
+
 ```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Type-check
-pnpm check
-
-# Build for production
-pnpm build
+npm ci
+npm run dev     # development server
+npm run check   # typecheck, lint, format check, unit tests
+npm run build   # static site in build/
+npm run e2e     # Playwright smoke tests (desktop + phone) against build/
 ```
+
+Other scripts: `preview`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:coverage`.
 
 ---
 
 ## Deployment
 
-Pushes to `main` are built and published to GitHub Pages by `.github/workflows/deploy.yml`
-(one-time setup: *Settings → Pages → Source: GitHub Actions*). The build sets
-`BASE_PATH=/<repo-name>` so all links resolve under the Pages subpath; local builds use the root path.
+Pushes to `main` run `.github/workflows/deploy.yml`: `configure-pages` provides the base path,
+the CI workflow (all gates including e2e) runs against it, then `build/` is published to GitHub
+Pages (one-time setup: _Settings → Pages → Source: GitHub Actions_). Pull requests run
+`.github/workflows/ci.yml`. The base path comes from `VITE_BASE` (e.g. `/neuro-screen/`); local
+builds use the root. Each build writes `version.json` (`{ build, time }`); a new version shows an
+update banner instead of reloading mid-test.
+
+---
+
+## Privacy
+
+Nothing leaves the device. Sessions, trial data and settings stay in the browser (IndexedDB
+`NeuroScreen`, localStorage keys `neuroscreen.*.v1`). The app makes no network requests besides
+loading its own files from the hosting origin, enforced by a Content Security Policy
+(`connect-src 'self'`). Spoken stimuli use the browser's built-in speech synthesis; depending on
+the operating system, that engine may itself use an online voice. JSON/CSV exports are created
+only when you click export.
 
 ---
 

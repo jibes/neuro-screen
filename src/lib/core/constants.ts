@@ -20,6 +20,9 @@ export const DEFAULT_PRACTICE_THRESHOLD = 0.6;
 export const COUNTDOWN_SECONDS = 3;
 
 /** Generate a jittered ISI */
-export function jitteredISI(base: number = DEFAULT_ITI_BASE, jitter: number = DEFAULT_ITI_JITTER): number {
-	return base + (Math.random() - 0.5) * jitter;
+export function jitteredISI(
+  base: number = DEFAULT_ITI_BASE,
+  jitter: number = DEFAULT_ITI_JITTER,
+): number {
+  return base + (Math.random() - 0.5) * jitter;
 }

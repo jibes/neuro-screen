@@ -1,236 +1,572 @@
-export const de = {
-	app: {
-		title: 'NeuroScreen',
-		subtitle: 'Neuropsychologisches Screening-Tool',
-		disclaimer:
-			'Dieses Tool dient ausschließlich als Screening-Instrument und ersetzt keine professionelle neuropsychologische Diagnostik. Bei Bedenken wenden Sie sich bitte an eine qualifizierte Fachperson.'
-	},
-	nav: {
-		home: 'Startseite',
-		tests: 'Tests',
-		results: 'Ergebnisse',
-		environment: 'Umgebungscheck'
-	},
-	common: {
-		start: 'Starten',
-		next: 'Weiter',
-		back: 'Zurück',
-		correct: 'Richtig!',
-		incorrect: 'Falsch!',
-		practiceComplete: 'Übung abgeschlossen. Der eigentliche Test beginnt jetzt.',
-		testComplete: 'Test abgeschlossen!',
-		ready: 'Bereit?',
-		pressSpace: 'Drücken Sie die Leertaste, um zu beginnen.',
-		results: 'Ergebnisse',
-		trials: 'Durchgänge',
-		accuracy: 'Genauigkeit',
-		reactionTime: 'Reaktionszeit',
-		mean: 'Mittelwert',
-		median: 'Median',
-		sd: 'Standardabweichung',
-		errors: 'Fehler',
-		overview: 'Übersicht',
-		backToOverview: 'Zurück zur Übersicht',
-		nextTest: 'Nächster Test',
-		exportCSV: 'CSV exportieren',
-		exportJSON: 'JSON exportieren',
-		deleteAll: 'Alle Daten löschen',
-		ms: 'ms',
-		percent: '%',
-		session: 'Sitzung',
-		notYetCompleted: 'Noch nicht durchgeführt',
-		practice: 'Übung',
-		test: 'Test'
-	},
-	touch: {
-		singleButton:
-			'Auf Touch-Geräten: Tippen Sie statt der Leertaste auf die große Schaltfläche am unteren Bildschirmrand.',
-		arrows:
-			'Auf Touch-Geräten: Tippen Sie statt der Pfeiltasten auf die Schaltflächen links/rechts am unteren Bildschirmrand.',
-		colors:
-			'Auf Touch-Geräten: Tippen Sie statt der Tasten D/F/J/K auf die Farbschaltflächen am unteren Bildschirmrand.',
-		keypad: 'Auf Touch-Geräten: Verwenden Sie das Ziffernfeld auf dem Bildschirm.',
-		tap: 'Tippen'
-	},
-	categories: {
-		attention: 'Aufmerksamkeit & Inhibition',
-		workingMemory: 'Arbeitsgedächtnis',
-		processingSpeed: 'Verarbeitungsgeschwindigkeit',
-		executive: 'Exekutivfunktionen',
-		memory: 'Gedächtnis'
-	},
-	tests: {
-		goNogo: {
-			name: 'Go/No-Go',
-			shortDesc: 'Reaktionshemmung und Aufmerksamkeit',
-			instructions: [
-				'In diesem Test sehen Sie farbige Kreise auf dem Bildschirm.',
-				'Wenn ein GRÜNER Kreis erscheint, drücken Sie so schnell wie möglich die LEERTASTE.',
-				'Wenn ein ROTER Kreis erscheint, drücken Sie KEINE Taste.',
-				'Versuchen Sie, so schnell und genau wie möglich zu reagieren.'
-			]
-		},
-		flanker: {
-			name: 'Flanker',
-			shortDesc: 'Selektive Aufmerksamkeit und Interferenzkontrolle',
-			instructions: [
-				'In diesem Test sehen Sie eine Reihe von Pfeilen.',
-				'Reagieren Sie nur auf den MITTLEREN Pfeil und ignorieren Sie die umgebenden Pfeile.',
-				'Drücken Sie die LINKE Pfeiltaste, wenn der mittlere Pfeil nach LINKS zeigt.',
-				'Drücken Sie die RECHTE Pfeiltaste, wenn der mittlere Pfeil nach RECHTS zeigt.'
-			]
-		},
-		digitSpan: {
-			name: 'Zahlenspanne',
-			shortDesc: 'Verbales Arbeitsgedächtnis (vorwärts und rückwärts)',
-			instructions: [
-				'Sie hören nacheinander einzelne Zahlen (falls keine Sprachausgabe verfügbar ist, werden sie angezeigt). Bitte schalten Sie den Ton ein.',
-				'Teil 1 – vorwärts: Geben Sie die Zahlen anschließend in der GLEICHEN Reihenfolge ein und bestätigen Sie mit Enter.',
-				'Teil 2 – rückwärts: Geben Sie die Zahlen in UMGEKEHRTER Reihenfolge ein. Vor jedem Teil gibt es Übungsdurchgänge.',
-				'Die Folgen werden schrittweise länger. Ein Teil endet, wenn beide Folgen einer Länge falsch wiedergegeben werden.'
-			]
-		},
-		stroop: {
-			name: 'Stroop',
-			shortDesc: 'Interferenzkontrolle',
-			instructions: [
-				'Sie sehen Farbwörter, die in verschiedenen Farben dargestellt werden.',
-				'Reagieren Sie auf die FARBE des Wortes, nicht auf das Wort selbst.',
-				'Drücken Sie: D = Rot, F = Blau, J = Grün, K = Gelb',
-				'Versuchen Sie, so schnell und genau wie möglich zu reagieren.'
-			]
-		},
-		nBack: {
-			name: 'N-Back',
-			shortDesc: 'Arbeitsgedächtnis-Aktualisierung',
-			instructions: [
-				'Sie sehen nacheinander Buchstaben auf dem Bildschirm.',
-				'Drücken Sie die LEERTASTE, wenn der aktuelle Buchstabe mit dem Buchstaben von vor 2 Positionen übereinstimmt (2-Back).',
-				'Drücken Sie KEINE Taste, wenn es keine Übereinstimmung gibt.'
-			]
-		},
-		cpt: {
-			name: 'CPT',
-			shortDesc: 'Daueraufmerksamkeit',
-			instructions: [
-				'Sie sehen nacheinander Buchstaben auf dem Bildschirm.',
-				'Drücken Sie die LEERTASTE, wenn der Buchstabe X erscheint.',
-				'Reagieren Sie bei keinem anderen Buchstaben.',
-				'Der Test dauert mehrere Minuten. Bleiben Sie aufmerksam.'
-			]
-		},
-		corsi: {
-			name: 'Corsi-Block',
-			shortDesc: 'Visuell-räumliches Arbeitsgedächtnis (vorwärts und rückwärts)',
-			instructions: [
-				'Auf dem Bildschirm sind neun Blöcke angeordnet. Einige leuchten nacheinander auf.',
-				'Teil 1 – vorwärts: Klicken Sie die Blöcke anschließend in der GLEICHEN Reihenfolge an.',
-				'Teil 2 – rückwärts: Klicken Sie die Blöcke in UMGEKEHRTER Reihenfolge an. Vor jedem Teil gibt es Übungsdurchgänge.',
-				'Die Folgen werden schrittweise länger. Ein Teil endet, wenn beide Folgen einer Länge falsch sind.'
-			]
-		},
-		symbolDigit: {
-			name: 'Symbol-Digit',
-			shortDesc: 'Verarbeitungsgeschwindigkeit',
-			instructions: [
-				'Am oberen Bildschirmrand sehen Sie eine Zuordnung von Symbolen zu Zahlen.',
-				'Darunter erscheinen Symbole. Geben Sie die zugehörige Zahl ein.',
-				'Zuerst bearbeiten Sie 10 Übungsaufgaben ohne Zeitlimit.',
-				'Danach haben Sie 90 Sekunden Zeit. Arbeiten Sie so schnell und genau wie möglich.'
-			]
-		},
-		trailMakingA: {
-			name: 'Trail Making A',
-			shortDesc: 'Verarbeitungsgeschwindigkeit',
-			instructions: [
-				'Auf dem Bildschirm sind nummerierte Kreise verteilt.',
-				'Verbinden Sie die Kreise in aufsteigender Reihenfolge (1-2-3-...) durch Anklicken.',
-				'Arbeiten Sie so schnell wie möglich.'
-			]
-		},
-		trailMakingB: {
-			name: 'Trail Making B',
-			shortDesc: 'Kognitive Flexibilität',
-			instructions: [
-				'Auf dem Bildschirm sind Kreise mit Zahlen und Buchstaben verteilt.',
-				'Verbinden Sie die Kreise in abwechselnder Reihenfolge: 1-A-2-B-3-C-...',
-				'Arbeiten Sie so schnell wie möglich.'
-			]
-		},
-		wcst: {
-			name: 'WCST',
-			shortDesc: 'Kognitive Flexibilität und Regellernen',
-			instructions: [
-				'Sie sehen vier Karten oben und eine Karte unten.',
-				'Ordnen Sie die untere Karte einer der oberen zu (nach Farbe, Form oder Anzahl).',
-				'Sie erhalten Rückmeldung, ob Ihre Zuordnung richtig war.',
-				'Die Zuordnungsregel ändert sich im Verlauf des Tests.'
-			]
-		},
-		tower: {
-			name: 'Turm von London',
-			shortDesc: 'Planung und Problemlösung',
-			instructions: [
-				'Sie sehen farbige Scheiben auf drei Stäben.',
-				'Klicken Sie zuerst auf einen Stab, um die oberste Scheibe auszuwählen, und dann auf den Zielstab.',
-				'Es darf nur eine Scheibe gleichzeitig bewegt werden.',
-				'Versuchen Sie, die Aufgabe in möglichst wenigen Zügen zu lösen.'
-			]
-		},
-		delayedRecall: {
-			name: 'Verzögerter Abruf',
-			shortDesc: 'Langzeitgedächtnis: Abruf und Wiedererkennen',
-			instructions: [
-				'Im Wortlisten-Test haben Sie eine Liste von 15 Wörtern gelernt (die erste, mehrfach dargebotene Liste).',
-				'Teil 1: Geben Sie so viele Wörter dieser ersten Liste ein, wie Sie sich erinnern. Klicken Sie auf „Fertig“, wenn Ihnen keine weiteren einfallen.',
-				'Teil 2: Danach sehen Sie einzelne Wörter. Entscheiden Sie jeweils, ob das Wort in der ERSTEN Liste vorkam.'
-			]
-		},
-		wordList: {
-			name: 'Wortliste',
-			shortDesc: 'Verbales Lernen und Gedächtnis (RAVLT-ähnlich)',
-			instructions: [
-				'Sie hören eine Liste von 15 Wörtern (ohne Sprachausgabe werden sie angezeigt). Bitte schalten Sie den Ton ein.',
-				'Geben Sie danach so viele Wörter wie möglich ein – die Reihenfolge ist egal. Die Liste wird insgesamt 5-mal dargeboten.',
-				'Danach folgt einmalig eine zweite Liste und anschließend ein erneuter Abruf der ersten Liste.',
-				'Führen Sie 20–30 Minuten später den Test „Verzögerter Abruf“ durch (bis dahin gern andere, nicht-sprachliche Tests).'
-			]
-		},
-		reyFigure: {
-			name: 'Figurengedächtnis',
-			shortDesc: 'Visuelles Gedächtnis (Wiedererkennung)',
-			instructions: [
-				'Sie sehen 30 Sekunden lang eine komplexe geometrische Figur. Prägen Sie sich die Figur genau ein.',
-				'Anschließend werden Ihnen einzelne Elemente gezeigt. Entscheiden Sie jeweils, ob das Element in der Figur enthalten war.',
-				'Nach einer kurzen Pause folgen weitere Elemente, ebenfalls aus dem Gedächtnis zu beurteilen.'
-			]
-		}
-	},
-	environment: {
-		title: 'Umgebungscheck',
-		description: 'Vor Beginn der Tests wird Ihre Testumgebung überprüft.',
-		runCheck: 'Umgebung prüfen',
-		allGood: 'Ihre Umgebung ist für die Tests geeignet.',
-		warnings: 'Es gibt Hinweise, die die Testergebnisse beeinflussen könnten.',
-		startAnyway: 'Trotzdem starten'
-	},
-	results: {
-		title: 'Ergebnisse',
-		noResults: 'Noch keine Tests durchgeführt.',
-		completedAt: 'Abgeschlossen am',
-		duration: 'Dauer',
-		hits: 'Treffer',
-		misses: 'Auslassungsfehler',
-		falseAlarms: 'Falsche Alarme',
-		commissionErrors: 'Kommissionsfehler',
-		omissionErrors: 'Auslassungsfehler',
-		dPrime: "d' (Sensitivität)",
-		flankerEffect: 'Flanker-Effekt',
-		stroopEffect: 'Stroop-Effekt',
-		span: 'Spanne',
-		forwardSpan: 'Vorwärtsspanne',
-		backwardSpan: 'Rückwärtsspanne'
-	}
-} as const;
+import type { Catalogue } from './en.js';
 
-export type Translations = typeof de;
+export const de = {
+  app: {
+    title: 'NeuroScreen',
+    subtitle: 'Neuropsychologisches Screening-Tool',
+    homeTitle: 'NeuroScreen – Neuropsychologisches Screening',
+    pageTitle: (page: string) => `${page} · NeuroScreen`,
+    disclaimer:
+      'Dieses Tool dient ausschließlich als Screening-Instrument und ersetzt keine professionelle neuropsychologische Diagnostik. Bei Bedenken wenden Sie sich bitte an eine qualifizierte Fachperson.',
+    disclaimerShort: 'Nur ein Screening – ersetzt keine professionelle Diagnostik.',
+    hideDisclaimer: 'Hinweis ausblenden',
+  },
+  nav: {
+    home: 'Startseite',
+    results: 'Ergebnisse',
+    environment: 'Umgebungscheck',
+    methods: 'Methodik',
+  },
+  theme: { label: 'Farbschema', light: 'Hell', dark: 'Dunkel', system: 'System' },
+  language: { label: 'Sprache', en: 'English', de: 'Deutsch' },
+  install: {
+    button: 'App installieren',
+    guideLabel: 'Installationsanleitung',
+    iosTapIn: 'Tippen Sie in Safari auf',
+    iosShare: 'Teilen',
+    iosThen: 'und dann auf',
+    iosAddToHome: '„Zum Home-Bildschirm“',
+  },
+  update: {
+    available: 'Eine neue Version ist verfügbar.',
+    reload: 'Aktualisieren',
+    later: 'Später',
+    offlineReady: 'Die App funktioniert jetzt auch offline.',
+  },
+  common: {
+    start: 'Starten',
+    next: 'Weiter',
+    back: 'Zurück',
+    correct: 'Richtig!',
+    incorrect: 'Falsch!',
+    practice: 'Übung',
+    practiceComplete: 'Übung abgeschlossen. Der eigentliche Test beginnt jetzt.',
+    testComplete: 'Test abgeschlossen!',
+    loading: 'Laden …',
+    ready: 'Bereit …',
+    backToOverview: 'Zurück zur Übersicht',
+    nextTest: 'Nächster Test',
+    exportCSV: 'CSV exportieren',
+    exportJSON: 'JSON exportieren',
+    deleteAll: 'Alle Daten löschen',
+    thanks: 'Danke.',
+    listenCarefully: 'Hören Sie gut zu …',
+    listen: 'Zuhören',
+    done: 'Fertig',
+    confirm: 'Bestätigen',
+    reset: 'Zurücksetzen',
+    delete: 'Löschen',
+    yes: 'Ja',
+    no: 'Nein',
+    yesKey: 'J',
+    noKey: 'N',
+    words: (n: number) => `${n} ${n === 1 ? 'Wort' : 'Wörter'}`,
+    wordPlaceholder: 'Wort eingeben …',
+    addWordHint: 'Geben Sie erinnerte Wörter ein (Enter zum Hinzufügen)',
+    secondsLeft: (s: number) => `Noch ${s} s`,
+    practiceItem: (a: number, b: number) => `Übung ${a} / ${b}`,
+    correctWouldBe: (answer: string) => `Richtig wäre: ${answer}`,
+    testStartsForward: 'Jetzt beginnt der Test (vorwärts).',
+    testStartsBackward: 'Jetzt beginnt der Test (rückwärts).',
+    forward: 'Vorwärts',
+    backward: 'Rückwärts',
+    presentation: { auditory: 'gesprochen', visual: 'visuell' },
+  },
+  shell: {
+    toOverview: 'Zur Übersicht',
+    abort: 'Test abbrechen',
+    pause: 'Pausieren (Esc)',
+    paused: 'Test pausiert',
+    pausedHidden: 'Sie haben das Fenster verlassen. Der unterbrochene Durchgang wird wiederholt.',
+    pausedUser: 'Die Zeitmessung ist angehalten. Beim Abbrechen wird nichts gespeichert.',
+    resume: 'Fortfahren',
+    pageOf: (a: number, b: number) => `Seite ${a} von ${b}`,
+    keyNext: 'weiter',
+    keyBack: 'zurück',
+  },
+  home: {
+    progressLabel: 'Fortschritt dieser Sitzung',
+    completed: (done: number, total: number) => `${done} von ${total} Tests durchgeführt`,
+    progress: 'Fortschritt',
+    remaining: (min: number) =>
+      `Noch ca. ${min} Minuten · Tests einzeln und in beliebiger Reihenfolge möglich`,
+    startFirst: 'Mit erstem Test beginnen',
+    continueWith: (name: string) => `Weiter: ${name}`,
+    viewResults: 'Ergebnisse ansehen',
+    done: 'erledigt',
+    minutes: (n: number) => `ca. ${n} Min.`,
+    delayedNote: '20–30 Min. nach der Wortliste',
+  },
+  categories: {
+    attention: 'Aufmerksamkeit & Inhibition',
+    workingMemory: 'Arbeitsgedächtnis',
+    processingSpeed: 'Verarbeitungsgeschwindigkeit',
+    executive: 'Exekutivfunktionen',
+    memory: 'Gedächtnis',
+  },
+  touch: {
+    singleButton:
+      'Auf Touch-Geräten: Tippen Sie statt der Leertaste auf die große Schaltfläche am unteren Bildschirmrand.',
+    arrows:
+      'Auf Touch-Geräten: Tippen Sie statt der Pfeiltasten auf die Schaltflächen links/rechts am unteren Bildschirmrand.',
+    colors:
+      'Auf Touch-Geräten: Tippen Sie statt der Tasten D/F/J/K auf die Farbschaltflächen am unteren Bildschirmrand.',
+    keypad: 'Auf Touch-Geräten: Verwenden Sie das Ziffernfeld auf dem Bildschirm.',
+    tap: 'Tippen',
+    left: '← Links',
+    right: 'Rechts →',
+  },
+  stimuli: {
+    speechLang: 'de',
+    stroopWords: { rot: 'ROT', blau: 'BLAU', gruen: 'GRÜN', gelb: 'GELB' },
+    colorNames: { rot: 'Rot', blau: 'Blau', gruen: 'Grün', gelb: 'Gelb' },
+    /** German version of RAVLT list A */
+    wordListA: [
+      'TROMMEL',
+      'VORHANG',
+      'GLOCKE',
+      'KAFFEE',
+      'SCHULE',
+      'ELTERN',
+      'MOND',
+      'GARTEN',
+      'HUT',
+      'BAUER',
+      'NASE',
+      'FARBE',
+      'HAUS',
+      'FLUSS',
+      'TISCH',
+    ],
+    wordListB: [
+      'FENSTER',
+      'KIRCHE',
+      'FISCH',
+      'WOLKE',
+      'KUCHEN',
+      'BRIEF',
+      'LAMPE',
+      'STEIN',
+      'BLUME',
+      'MESSER',
+      'STUHL',
+      'PFERD',
+      'TURM',
+      'RADIO',
+      'BESEN',
+    ],
+    wordListFoils: [
+      'PAUKE',
+      'GARDINE',
+      'KLINGEL',
+      'MILCH',
+      'LEHRER',
+      'KINDER',
+      'STERN',
+      'WIESE',
+      'MÜTZE',
+      'HIRTE',
+      'MUND',
+      'SCHATTEN',
+      'WOHNUNG',
+      'BACH',
+      'BANK',
+    ],
+  },
+  tests: {
+    goNogo: {
+      name: 'Go/No-Go',
+      shortDesc: 'Reaktionshemmung und Aufmerksamkeit',
+      instructions: [
+        'In diesem Test sehen Sie farbige Kreise auf dem Bildschirm.',
+        'Wenn ein GRÜNER Kreis erscheint, drücken Sie so schnell wie möglich die LEERTASTE.',
+        'Wenn ein ROTER Kreis erscheint, drücken Sie KEINE Taste.',
+        'Versuchen Sie, so schnell und genau wie möglich zu reagieren.',
+      ],
+    },
+    flanker: {
+      name: 'Flanker',
+      shortDesc: 'Selektive Aufmerksamkeit und Interferenzkontrolle',
+      instructions: [
+        'In diesem Test sehen Sie eine Reihe von Pfeilen.',
+        'Reagieren Sie nur auf den MITTLEREN Pfeil und ignorieren Sie die umgebenden Pfeile.',
+        'Drücken Sie die LINKE Pfeiltaste, wenn der mittlere Pfeil nach LINKS zeigt.',
+        'Drücken Sie die RECHTE Pfeiltaste, wenn der mittlere Pfeil nach RECHTS zeigt.',
+      ],
+    },
+    stroop: {
+      name: 'Stroop',
+      shortDesc: 'Interferenzkontrolle',
+      instructions: [
+        'Sie sehen Farbwörter, die in verschiedenen Farben dargestellt werden.',
+        'Reagieren Sie auf die FARBE des Wortes, nicht auf das Wort selbst.',
+        'Drücken Sie: D = Rot, F = Blau, J = Grün, K = Gelb',
+        'Versuchen Sie, so schnell und genau wie möglich zu reagieren.',
+      ],
+    },
+    cpt: {
+      name: 'CPT',
+      shortDesc: 'Daueraufmerksamkeit',
+      instructions: [
+        'Sie sehen nacheinander Buchstaben auf dem Bildschirm.',
+        'Drücken Sie die LEERTASTE, wenn der Buchstabe X erscheint.',
+        'Reagieren Sie bei keinem anderen Buchstaben.',
+        'Der Test dauert mehrere Minuten. Bleiben Sie aufmerksam.',
+      ],
+    },
+    nBack: {
+      name: 'N-Back',
+      shortDesc: 'Arbeitsgedächtnis-Aktualisierung',
+      instructions: [
+        'Sie sehen nacheinander Buchstaben auf dem Bildschirm.',
+        'Drücken Sie die LEERTASTE, wenn der aktuelle Buchstabe mit dem Buchstaben von vor 2 Positionen übereinstimmt (2-Back).',
+        'Drücken Sie KEINE Taste, wenn es keine Übereinstimmung gibt.',
+      ],
+      hint: (n: number, touch: boolean) =>
+        `${n}-Back: ${touch ? 'Tippen' : 'Leertaste drücken'}, wenn der Buchstabe dem von vor ${n} Positionen entspricht`,
+    },
+    digitSpan: {
+      name: 'Zahlenspanne',
+      shortDesc: 'Verbales Arbeitsgedächtnis (vorwärts und rückwärts)',
+      instructions: [
+        'Sie hören nacheinander einzelne Zahlen (falls keine Sprachausgabe verfügbar ist, werden sie angezeigt). Bitte schalten Sie den Ton ein.',
+        'Teil 1 – vorwärts: Geben Sie die Zahlen anschließend in der GLEICHEN Reihenfolge ein und bestätigen Sie mit Enter.',
+        'Teil 2 – rückwärts: Geben Sie die Zahlen in UMGEKEHRTER Reihenfolge ein. Vor jedem Teil gibt es Übungsdurchgänge.',
+        'Die Folgen werden schrittweise länger. Ein Teil endet, wenn beide Folgen einer Länge falsch wiedergegeben werden.',
+      ],
+      backwardIntro: 'Nun rückwärts: Geben Sie die Zahlen in UMGEKEHRTER Reihenfolge ein.',
+      inputForward: 'Vorwärts: in derselben Reihenfolge',
+      inputBackward: 'Rückwärts: in umgekehrter Reihenfolge',
+      inputHint: 'Eingabe per Tastatur oder Ziffernfeld, bestätigen mit Enter bzw. OK',
+    },
+    corsi: {
+      name: 'Corsi-Block',
+      shortDesc: 'Visuell-räumliches Arbeitsgedächtnis (vorwärts und rückwärts)',
+      instructions: [
+        'Auf dem Bildschirm sind neun Blöcke angeordnet. Einige leuchten nacheinander auf.',
+        'Teil 1 – vorwärts: Klicken Sie die Blöcke anschließend in der GLEICHEN Reihenfolge an.',
+        'Teil 2 – rückwärts: Klicken Sie die Blöcke in UMGEKEHRTER Reihenfolge an. Vor jedem Teil gibt es Übungsdurchgänge.',
+        'Die Folgen werden schrittweise länger. Ein Teil endet, wenn beide Folgen einer Länge falsch sind.',
+      ],
+      backwardIntro: 'Nun rückwärts: Klicken Sie die Blöcke in UMGEKEHRTER Reihenfolge an.',
+      inputForward: 'Vorwärts: in derselben Reihenfolge anklicken',
+      inputBackward: 'Rückwärts: in umgekehrter Reihenfolge anklicken',
+      watch: 'Beobachten Sie die Reihenfolge …',
+    },
+    symbolDigit: {
+      name: 'Symbol-Digit',
+      shortDesc: 'Verarbeitungsgeschwindigkeit',
+      instructions: [
+        'Am oberen Bildschirmrand sehen Sie eine Zuordnung von Symbolen zu Zahlen.',
+        'Darunter erscheinen Symbole. Geben Sie die zugehörige Zahl ein.',
+        'Zuerst bearbeiten Sie 10 Übungsaufgaben ohne Zeitlimit.',
+        'Danach haben Sie 90 Sekunden Zeit. Arbeiten Sie so schnell und genau wie möglich.',
+      ],
+      practiceNoLimit: (a: number, b: number) => `Übung ${a} / ${b} – ohne Zeitlimit`,
+      transition: 'Übung beendet. Jetzt 90 Sekunden – so schnell und genau wie möglich!',
+      answered: (n: number) => `${n} beantwortet`,
+    },
+    trailMakingA: {
+      name: 'Trail Making A',
+      shortDesc: 'Verarbeitungsgeschwindigkeit',
+      instructions: [
+        'Auf dem Bildschirm sind nummerierte Kreise verteilt.',
+        'Verbinden Sie die Kreise in aufsteigender Reihenfolge (1-2-3-…) durch Anklicken.',
+        'Arbeiten Sie so schnell wie möglich.',
+      ],
+    },
+    trailMakingB: {
+      name: 'Trail Making B',
+      shortDesc: 'Kognitive Flexibilität',
+      instructions: [
+        'Auf dem Bildschirm sind Kreise mit Zahlen und Buchstaben verteilt.',
+        'Verbinden Sie die Kreise in abwechselnder Reihenfolge: 1-A-2-B-3-C-…',
+        'Arbeiten Sie so schnell wie möglich.',
+      ],
+      order: 'Reihenfolge: 1 → A → 2 → B → 3 → C → …',
+    },
+    trail: {
+      transition: 'Übung beendet. Jetzt beginnt der eigentliche Test – so schnell wie möglich!',
+      begin: 'Anfang',
+      end: 'Ende',
+    },
+    wcst: {
+      name: 'WCST',
+      shortDesc: 'Kognitive Flexibilität und Regellernen',
+      instructions: [
+        'Sie sehen vier Karten oben und eine Karte unten.',
+        'Ordnen Sie die untere Karte einer der oberen zu (nach Farbe, Form oder Anzahl).',
+        'Sie erhalten Rückmeldung, ob Ihre Zuordnung richtig war.',
+        'Die Zuordnungsregel ändert sich im Verlauf des Tests.',
+      ],
+      feedbackCorrect: 'Richtig',
+      feedbackWrong: 'Falsch',
+      trialOf: (a: number, b: number) => `Durchgang ${a} / ${b}`,
+    },
+    tower: {
+      name: 'Turm von London',
+      shortDesc: 'Planung und Problemlösung',
+      instructions: [
+        'Sie sehen farbige Scheiben auf drei Stäben.',
+        'Klicken Sie zuerst auf einen Stab, um die oberste Scheibe auszuwählen, und dann auf den Zielstab.',
+        'Es darf nur eine Scheibe gleichzeitig bewegt werden.',
+        'Versuchen Sie, die Aufgabe in möglichst wenigen Zügen zu lösen.',
+      ],
+      goal: (a: number, b: number) => `Zielzustand (Problem ${a}/${b}):`,
+      current: (moves: number, max: number, min: number, s: number) =>
+        `Aktuell (Zug ${moves}/${max} · minimal ${min} · noch ${s} s):`,
+      capacity: (n: number) => `Max ${n}`,
+      invalidMove: 'Ungültiger Zug!',
+      selectPeg: 'Klicken bzw. tippen Sie auf einen Stab, um die oberste Scheibe auszuwählen',
+      selectTarget: 'Klicken bzw. tippen Sie auf den Zielstab',
+    },
+    wordList: {
+      name: 'Wortliste',
+      shortDesc: 'Verbales Lernen und Gedächtnis (RAVLT-ähnlich)',
+      instructions: [
+        'Sie hören eine Liste von 15 Wörtern (ohne Sprachausgabe werden sie angezeigt). Bitte schalten Sie den Ton ein.',
+        'Geben Sie danach so viele Wörter wie möglich ein – die Reihenfolge ist egal. Die Liste wird insgesamt 5-mal dargeboten.',
+        'Danach folgt einmalig eine zweite Liste und anschließend ein erneuter Abruf der ersten Liste.',
+        'Führen Sie 20–30 Minuten später den Test „Verzögerter Abruf“ durch (bis dahin gern andere, nicht-sprachliche Tests).',
+      ],
+      learningTrial: 'Lerndurchgang',
+      freeRecall: 'Freier Abruf',
+      interferenceList: 'Interferenzliste',
+      interferenceRecall: 'Freier Abruf (Interferenz)',
+      shortDelay: 'Kurzabruf',
+      trialOf: (a: number, b: number) => `${a} von ${b}`,
+      repeatList: 'Die Liste wird nun noch einmal dargeboten.',
+      newList: 'Jetzt kommt eine neue Wortliste.',
+      recallFirstList: 'Erinnern Sie sich jetzt an die ERSTE Wortliste.',
+      delayedFollows:
+        'Danke. Der verzögerte Abruf folgt in 20–30 Minuten (Test „Verzögerter Abruf“).',
+      placeholderWord: 'WORT',
+    },
+    delayedRecall: {
+      name: 'Verzögerter Abruf',
+      shortDesc: 'Langzeitgedächtnis: Abruf und Wiedererkennen',
+      instructions: [
+        'Im Wortlisten-Test haben Sie eine Liste von 15 Wörtern gelernt (die erste, mehrfach dargebotene Liste).',
+        'Teil 1: Geben Sie so viele Wörter dieser ersten Liste ein, wie Sie sich erinnern. Klicken Sie auf „Fertig“, wenn Ihnen keine weiteren einfallen.',
+        'Teil 2: Danach sehen Sie einzelne Wörter. Entscheiden Sie jeweils, ob das Wort in der ERSTEN Liste vorkam.',
+      ],
+      missing: 'Dieser Test setzt voraus, dass zuvor der Wortlisten-Test durchgeführt wurde.',
+      startWordList: (name: string) => `${name} starten`,
+      tooEarly: (min: number, required: number) =>
+        `Der Wortlisten-Test liegt erst ${min} Minuten zurück. Empfohlen ist eine Verzögerung von mindestens ${required} Minuten.`,
+      waitMore: (min: number) =>
+        `Bitte noch ca. ${min} Minuten warten (z. B. andere Tests durchführen).`,
+      startAnyway: 'Trotzdem starten',
+      recallPrompt: 'Erinnern Sie sich an die Wörter der ersten Liste',
+      recognitionPrompt: 'War dieses Wort in der ERSTEN Liste?',
+      recognitionProgress: (a: number, b: number) => `Wiedererkennung (${a} / ${b})`,
+    },
+    reyFigure: {
+      name: 'Figurengedächtnis',
+      shortDesc: 'Visuelles Gedächtnis (Wiedererkennung)',
+      instructions: [
+        'Sie sehen 30 Sekunden lang eine komplexe geometrische Figur. Prägen Sie sich die Figur genau ein.',
+        'Anschließend werden Ihnen einzelne Elemente gezeigt. Entscheiden Sie jeweils, ob das Element in der Figur enthalten war.',
+        'Nach einer kurzen Pause folgen weitere Elemente, ebenfalls aus dem Gedächtnis zu beurteilen.',
+      ],
+      study: 'Figur einprägen',
+      studyPrompt: 'Prägen Sie sich diese Figur ein',
+      immediate: 'Sofortige Wiedererkennung',
+      pause: 'Pause',
+      delayed: 'Verzögerte Wiedererkennung',
+      question: 'War dieses Element in der Figur enthalten?',
+      pauseCountdown: (s: number) => `Pause (${s} s)`,
+      pauseHint:
+        'Gleich werden weitere Elemente gezeigt. Entscheiden Sie wieder, ob sie zur Figur gehörten.',
+    },
+  },
+  environment: {
+    title: 'Umgebungscheck',
+    description: 'Vor Beginn der Tests wird Ihre Testumgebung überprüft.',
+    runCheck: 'Umgebung prüfen',
+    checking: 'Wird geprüft …',
+    allGood: 'Ihre Umgebung ist für die Tests geeignet.',
+    warnings: 'Es gibt Hinweise, die die Testergebnisse beeinflussen könnten.',
+    startAnyway: 'Trotzdem starten',
+    unknown: 'Unbekannt',
+    checks: {
+      screen: {
+        label: 'Bildschirmauflösung',
+        detail: (w: number, h: number) => `Empfohlen: mindestens ${w} × ${h}`,
+      },
+      refresh: {
+        label: 'Bildwiederholrate',
+        detail: 'Niedrige Bildwiederholrate kann die Timing-Präzision beeinträchtigen',
+      },
+      timer: {
+        label: 'Timer-Auflösung',
+        detail: 'Browser-Sicherheitseinstellungen begrenzen die Timer-Präzision',
+      },
+      audio: {
+        label: 'Web Audio API',
+        available: 'Verfügbar',
+        unavailable: 'Nicht verfügbar',
+        detailUnavailable: 'Auditive Tests sind ohne Web Audio nicht möglich',
+        latency: (ms: string) => `Latenz: ${ms} ms`,
+      },
+      input: {
+        label: 'Eingabegeräte',
+        detailTouch:
+          'Bedienung über Bildschirmtasten; Reaktionszeiten per Touch sind mit Tastatur-Normen nur eingeschränkt vergleichbar',
+        detailNone: 'Einige Tests erfordern eine Tastatur oder einen Touchscreen',
+      },
+      browser: {
+        label: 'Browser',
+        value: (browser: string, os: string) => `${browser} auf ${os}`,
+        detail: 'Chrome oder Firefox empfohlen für beste Timing-Präzision',
+      },
+    },
+  },
+  quality: {
+    caution: 'Hinweise zur Datenqualität – mit Vorsicht interpretieren',
+    title: 'Hinweise zur Datenqualität',
+    count: (n: number) => `${n} ${n === 1 ? 'Hinweis' : 'Hinweise'} zur Datenqualität`,
+    flags: {
+      manyOmissions: (p: string) => `Viele Auslassungen (${p} der Go-Durchgänge)`,
+      respondsToNoGo: 'Reaktion auf fast alle No-Go-Reize – Instruktion evtl. nicht befolgt',
+      manyAnticipations: (n: number) => `Viele antizipatorische Reaktionen (< 150 ms): ${n}`,
+      anticipations: (n: number) => `Antizipatorische Reaktionen: ${n}`,
+      nearChance2: (p: string) => `Genauigkeit nahe Zufallsniveau (${p}, Zufall 50 %)`,
+      lowAccuracy4: (p: string) => `Niedrige Genauigkeit (${p}, Zufall 25 %)`,
+      manyMisses: (n: number) => `Viele fehlende Antworten (${n})`,
+      halfTargetsMissed: (n: number) => `Mehr als die Hälfte der Zielreize verpasst (${n})`,
+      lowDPrime: (d: string) => `Diskriminationsleistung nahe Zufall (d′ = ${d})`,
+      noResponses: 'Keine einzige Reaktion – Instruktion evtl. nicht verstanden',
+      spanZero: 'Vorwärtsspanne 0 – keine Folge korrekt wiedergegeben',
+      highErrorRate: (p: string) => `Hohe Fehlerrate (${p})`,
+      noCategory: 'Keine Kategorie erreicht',
+      lowRecall: 'Sehr geringe Wiedergabe in allen Lerndurchgängen',
+      shortDelay: (min: number) => `Verzögerung nur ${min} min (Standard: 20–30 min)`,
+      immediateNearChance: (d: string) => `Sofortige Wiedererkennung nahe Zufall (d′ = ${d})`,
+      paused: (n: number) => `Test wurde ${n}× unterbrochen`,
+      touch: 'Touch-Eingabe: Reaktionszeiten nicht mit Tastatur-Normen vergleichbar',
+    },
+  },
+  results: {
+    title: 'Ergebnisse',
+    noResults: 'Noch keine Tests durchgeführt.',
+    startTests: 'Tests starten',
+    sessionFrom: (date: string) => `Sitzung vom ${date}`,
+    completedAt: 'Abgeschlossen am',
+    duration: 'Dauer',
+    notFound: 'Test nicht gefunden.',
+    trialsHeading: (n: number) => `Einzelne Durchgänge (${n})`,
+    colTrial: '#',
+    colRt: 'RT (ms)',
+    colCorrect: 'Korrekt',
+    environmentTitle: 'Hinweise zur Testumgebung',
+    rawScoreNote: 'Rohwerte ohne Normvergleich – keine Diagnose.',
+    toMethods: 'Zur Methodik',
+    confirmDeleteAll: 'Alle Daten unwiderruflich löschen?',
+  },
+  metrics: {
+    trialsGoNoGo: 'Durchgänge (Go / No-Go)',
+    hits: 'Treffer',
+    omissions: 'Auslassungsfehler',
+    commissions: 'Kommissionsfehler',
+    falseAlarms: 'Falsche Alarme',
+    accuracy: 'Genauigkeit',
+    rtHitsMeanSd: 'RT Treffer Mittelwert ± SD',
+    rtHitsMedian: 'RT Treffer Median',
+    rtHitsMeanMedian: 'RT Treffer (M / Md)',
+    dPrime: 'd′ (Sensitivität)',
+    bias: 'Antworttendenz (c)',
+    excluded: 'Ausgeschlossen (Antizipationen / Ausreißer)',
+    flankerEffectMean: 'Flanker-Effekt (Mittelwert)',
+    flankerEffectMedian: 'Flanker-Effekt (Median)',
+    rtCongruent: 'RT kongruent (M / Md)',
+    rtIncongruent: 'RT inkongruent (M / Md)',
+    rtNeutral: 'RT neutral (M / Md)',
+    errorsCongruentIncongruent: 'Fehler kongruent / inkongruent',
+    errorsThree: 'Fehler kongr. / inkongr. / neutral',
+    misses: 'Keine Antwort',
+    stroopEffect: 'Stroop-Effekt (inkongruent − kongruent)',
+    stroopInterference: 'Interferenz (inkongruent − neutral)',
+    stroopFacilitation: 'Fazilitation (neutral − kongruent)',
+    level: 'Stufe',
+    cv: 'Variabilität (CV = SD/M)',
+    rtByBlock: 'RT pro Block',
+    omissionsByBlock: 'Auslassungen pro Block',
+    commissionsByBlock: 'Kommissionen pro Block',
+    digitSpans: 'Längste Spanne vorwärts / rückwärts',
+    rawForward: 'Rohwert vorwärts (korrekte Durchgänge)',
+    rawBackward: 'Rohwert rückwärts (korrekte Durchgänge)',
+    rawTotal: 'Gesamtrohwert',
+    presentation: 'Darbietung',
+    corsiSpans: 'Blockspanne vorwärts / rückwärts',
+    corsiScores: 'Gesamtscore vorwärts / rückwärts (Spanne × korrekte Folgen)',
+    meanResponseTime: 'Mittlere Antwortzeit',
+    correct: 'Korrekt',
+    attempted: 'Bearbeitet',
+    errors: 'Fehler',
+    timeLimit: 'Zeitlimit',
+    perSecond: 'Korrekte pro Sekunde',
+    variant: 'Variante',
+    totalTime: 'Gesamtzeit',
+    bMinusA: 'B − A (Differenz)',
+    bOverA: 'B / A (Quotient)',
+    segmentTimes: 'Segmentzeiten',
+    categories: 'Kategorien',
+    trials: 'Durchgänge',
+    totalErrors: 'Fehler gesamt',
+    perseverativeErrors: 'Perseverative Fehler',
+    perseverativeResponses: 'Perseverative Antworten',
+    nonPerseverativeErrors: 'Nicht-perseverative Fehler',
+    conceptual: 'Konzeptuelle Antworten',
+    failureToMaintainSet: 'Failure to Maintain Set',
+    trialsToFirst: 'Durchgänge bis 1. Kategorie',
+    solvedOptimally: 'Mit Minimalzügen gelöst',
+    solved: 'Gelöst',
+    moves: 'Züge (gesamt / minimal)',
+    excessMoves: 'Überzählige Züge',
+    planning: 'Planungszeit (alle / gelöste)',
+    execution: 'Ausführungszeit',
+    ruleViolations: 'Regelverstöße',
+    timeouts: 'Zeitüberschreitungen',
+    sumA1A5: 'Summe A1–A5',
+    perTrial: 'Wörter pro Durchgang (A1–A5)',
+    lot: 'Lernzuwachs (Σ − 5 × A1)',
+    slope: 'Lernsteigung',
+    listB: 'Liste B',
+    a6: 'A6 (nach Interferenz)',
+    pi: 'Proaktive Interferenz (B/A1)',
+    ri: 'Retroaktive Interferenz (A6/A5)',
+    intrusions: 'Intrusionen',
+    primacyRecency: 'Primacy / Recency',
+    a7: 'Verzögerter Abruf (A7)',
+    a5a6: 'A5 / A6 (Wortliste)',
+    retention: 'Behaltensquote (A7/A5)',
+    delay: 'Verzögerung',
+    recognitionHits: 'Wiedererkennung: Treffer',
+    recognitionFp: 'Wiedererkennung: Falsch-Positive (Liste B)',
+    discrimination: 'Diskrimination (Treffer − FP)',
+    recognitionDPrime: 'd′ Wiedererkennung',
+    dPrimeImmediate: 'd′ sofort',
+    dPrimeDelayed: 'd′ verzögert',
+    hitsFpImmediate: 'Treffer / Falsch-Positive sofort',
+    hitsFpDelayed: 'Treffer / Falsch-Positive verzögert',
+  },
+  keyMetric: {
+    goNogo: (d: string, acc: string) => `d′ = ${d}, Genauigkeit ${acc}`,
+    flanker: (ms: string, acc: string) => `Flanker-Effekt ${ms} ms, Genauigkeit ${acc}`,
+    stroop: (ms: string, acc: string) => `Stroop-Effekt ${ms} ms, Genauigkeit ${acc}`,
+    nBack: (d: string, acc: string) => `d′ = ${d}, Genauigkeit ${acc}`,
+    cpt: (d: string, ms: string) => `d′ = ${d}, RT ${ms} ms`,
+    digitSpan: (f: number, b: number) => `Spanne vorwärts ${f}, rückwärts ${b}`,
+    corsi: (f: number, b: number) => `Blockspanne vorwärts ${f}, rückwärts ${b}`,
+    symbolDigit: (n: number, rate: string) => `Korrekt: ${n}, ${rate}/s`,
+    trail: (variant: string, s: string, errors: number) => `${variant}: ${s} s, Fehler: ${errors}`,
+    wcst: (cat: number, pe: number) => `Kategorien: ${cat}, perseverative Fehler: ${pe}`,
+    tower: (a: number, b: number, s: string) => `Minimal gelöst: ${a}/${b}, Planungszeit ${s} s`,
+    wordList: (sum: number, a6: number) => `Σ A1–A5: ${sum}, A6: ${a6}`,
+    delayedRecall: (a7: number, n: number, ret: string, hits: number) =>
+      `A7: ${a7}/${n}, Behaltensquote ${ret}, Wiedererkennung ${hits}/${n}`,
+    reyFigure: (a: string, b: string) => `d′ sofort: ${a}, verzögert: ${b}`,
+  },
+  build: (sha: string, date: string) => `Version ${sha} · ${date}`,
+} satisfies Catalogue;

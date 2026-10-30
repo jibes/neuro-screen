@@ -1,0 +1,9 @@
+build
+dist
+node_modules
+coverage
+playwright-report
+test-results
+.svelte-kit
+package-lock.json
+static/icons

@@ -1,6 +1,6 @@
 export interface DelayedRecallTrial {
-	recalledWords: string[];
-	correctCount: number;
-	intrusionCount: number;
-	responseTimeMs: number;
+  recalledWords: string[];
+  correctCount: number;
+  intrusionCount: number;
+  responseTimeMs: number;
 }

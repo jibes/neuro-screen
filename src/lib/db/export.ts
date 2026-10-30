@@ -3,70 +3,70 @@ import type { TestRun, TrialData } from './models.js';
 
 /** Export all test runs for a session as JSON */
 export async function exportSessionJSON(sessionId: number): Promise<string> {
-	const testRuns = await getTestRuns(sessionId);
-	const data: Array<{ testRun: TestRun; trials: TrialData[] }> = [];
+  const testRuns = await getTestRuns(sessionId);
+  const data: Array<{ testRun: TestRun; trials: TrialData[] }> = [];
 
-	for (const run of testRuns) {
-		const trials = await getTrials(run.id!);
-		data.push({ testRun: run, trials });
-	}
+  for (const run of testRuns) {
+    const trials = await getTrials(run.id!);
+    data.push({ testRun: run, trials });
+  }
 
-	return JSON.stringify(data, null, 2);
+  return JSON.stringify(data, null, 2);
 }
 
 /** Quote a CSV field if needed (RFC 4180) */
 function csvField(value: unknown): string {
-	if (value === null || value === undefined) return '';
-	const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
-	return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  if (value === null || value === undefined) return '';
+  const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
+  return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
 /** Export trial-level data for a test run as CSV */
 export function trialsToCSV(trials: TrialData[]): string {
-	if (trials.length === 0) return '';
+  if (trials.length === 0) return '';
 
-	const headers = [
-		'trialNumber',
-		'phase',
-		'rt',
-		'correct',
-		'onsetTimestamp',
-		'responseTimestamp',
-		'stimulus',
-		'response',
-		'customData'
-	];
+  const headers = [
+    'trialNumber',
+    'phase',
+    'rt',
+    'correct',
+    'onsetTimestamp',
+    'responseTimestamp',
+    'stimulus',
+    'response',
+    'customData',
+  ];
 
-	const rows = trials.map((t) =>
-		[
-			t.trialNumber,
-			t.phase,
-			t.rt !== null ? t.rt.toFixed(2) : '',
-			t.correct !== null ? (t.correct ? '1' : '0') : '',
-			t.onsetTimestamp.toFixed(2),
-			t.responseTimestamp !== null ? t.responseTimestamp.toFixed(2) : '',
-			t.stimulus,
-			t.response,
-			t.customData
-		]
-			.map(csvField)
-			.join(',')
-	);
+  const rows = trials.map((t) =>
+    [
+      t.trialNumber,
+      t.phase,
+      t.rt !== null ? t.rt.toFixed(2) : '',
+      t.correct !== null ? (t.correct ? '1' : '0') : '',
+      t.onsetTimestamp.toFixed(2),
+      t.responseTimestamp !== null ? t.responseTimestamp.toFixed(2) : '',
+      t.stimulus,
+      t.response,
+      t.customData,
+    ]
+      .map(csvField)
+      .join(','),
+  );
 
-	return [headers.join(','), ...rows].join('\n');
+  return [headers.join(','), ...rows].join('\n');
 }
 
 /** Trigger a file download in the browser */
 export function downloadFile(content: string, filename: string, mimeType: string): void {
-	const blob = new Blob([content], { type: mimeType });
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = filename;
-	a.style.display = 'none';
-	document.body.appendChild(a);
-	a.click();
-	a.remove();
-	// Revoking synchronously can cancel the download in some browsers
-	setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoking synchronously can cancel the download in some browsers
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

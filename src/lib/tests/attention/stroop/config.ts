@@ -4,33 +4,34 @@ import { jitteredISI } from '$lib/core/constants.js';
 const i = t();
 
 export const STROOP_CONFIG = {
-	testId: 'stroop',
-	testName: i.tests.stroop.name,
-	instructions: i.tests.stroop.instructions,
+  testId: 'stroop',
+  testName: i.tests.stroop.name,
+  instructions: i.tests.stroop.instructions,
 
-	totalTrials: 108, // 36 per condition: inks and ink-word pairings fully balanced
-	trialsPerCondition: 36,
-	stimulusDuration: null as number | null,
-	fixationDuration: 500,
-	responseWindow: 2000,
-	feedbackDuration: 500,
-	itiDuration: () => jitteredISI(1000, 400),
+  totalTrials: 108, // 36 per condition: inks and ink-word pairings fully balanced
+  trialsPerCondition: 36,
+  stimulusDuration: null as number | null,
+  fixationDuration: 500,
+  responseWindow: 2000,
+  feedbackDuration: 500,
+  itiDuration: () => jitteredISI(1000, 400),
 
-	colors: ['rot', 'blau', 'gruen', 'gelb'] as const,
-	words: ['ROT', 'BLAU', 'GRÜN', 'GELB'] as const,
-	neutralWord: 'XXXX',
+  colors: ['rot', 'blau', 'gruen', 'gelb'] as const,
+  /** Colour words in the active language (stimulus material) */
+  words: i.stimuli.stroopWords,
+  neutralWord: 'XXXX',
 
-	keyMap: { 'd': 'rot', 'f': 'blau', 'j': 'gruen', 'k': 'gelb' } as Record<string, string>,
-	responseKeys: ['d', 'f', 'j', 'k'],
+  keyMap: { d: 'rot', f: 'blau', j: 'gruen', k: 'gelb' } as Record<string, string>,
+  responseKeys: ['d', 'f', 'j', 'k'],
 
-	practiceTrials: 12,
-	practiceAccuracyThreshold: 0.6,
-	maxPracticeAttempts: 3,
+  practiceTrials: 12,
+  practiceAccuracyThreshold: 0.6,
+  maxPracticeAttempts: 3,
 
-	colorHex: {
-		rot: 'var(--color-stim-rot)',
-		blau: 'var(--color-stim-blau)',
-		gruen: 'var(--color-stim-gruen)',
-		gelb: 'var(--color-stim-gelb)'
-	} as Record<string, string>
+  colorHex: {
+    rot: 'var(--color-stim-rot)',
+    blau: 'var(--color-stim-blau)',
+    gruen: 'var(--color-stim-gruen)',
+    gelb: 'var(--color-stim-gelb)',
+  } as Record<string, string>,
 } as const;

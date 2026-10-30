@@ -1,221 +1,227 @@
 <script lang="ts">
-	import { base } from '$app/paths';
-	import { onDestroy } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { t } from '$lib/i18n/index.js';
-	import TestShell from '$lib/components/TestShell.svelte';
-	import ResultsCard from '$lib/components/ResultsCard.svelte';
-	import { HighResTimer } from '$lib/core/timing.js';
-	import { WCST_CONFIG } from './config.js';
-	import { generateDeck, getMatchedDimensions, isCorrectMatch, computeSummary, scorePerseveration } from './logic.js';
-	import type { WCSTCard, WCSTRule, WCSTTrialResult } from './types.js';
-	import type { WCSTSummary } from '$lib/db/models.js';
-	import { saveRunToSession } from '$lib/db/session-store.svelte.js';
-	import { getNextTest } from '$lib/tests/registry.js';
+  import { resolve } from '$app/paths';
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { t } from '$lib/i18n/index.js';
+  import TestShell from '$lib/components/TestShell.svelte';
+  import ResultsCard from '$lib/components/ResultsCard.svelte';
+  import { HighResTimer } from '$lib/core/timing.js';
+  import { WCST_CONFIG } from './config.js';
+  import {
+    generateDeck,
+    getMatchedDimensions,
+    isCorrectMatch,
+    computeSummary,
+    scorePerseveration,
+  } from './logic.js';
+  import type { WCSTCard, WCSTTrialResult } from './types.js';
+  import type { WCSTSummary } from '$lib/db/models.js';
+  import { saveRunToSession } from '$lib/db/session-store.svelte.js';
+  import { getNextTest } from '$lib/tests/registry.js';
 
-	const i = t();
-	const config = WCST_CONFIG;
-	const nextTest = getNextTest(config.testId);
+  const i = t();
+  const config = WCST_CONFIG;
+  const nextTest = getNextTest(config.testId);
 
-	let testShell = $state<TestShell>();
-	let summary = $state<WCSTSummary | null>(null);
+  let testShell = $state<TestShell>();
+  let summary = $state<WCSTSummary | null>(null);
 
-	let currentCard = $state<WCSTCard | null>(null);
-	let feedbackText = $state('');
-	let feedbackCorrect = $state(false);
-	let showFeedback = $state(false);
-	let trialNumber = $state(0);
-	let running = $state(false);
+  let currentCard = $state<WCSTCard | null>(null);
+  let feedbackText = $state('');
+  let feedbackCorrect = $state(false);
+  let showFeedback = $state(false);
+  let trialNumber = $state(0);
+  let running = $state(false);
 
-	const timer = new HighResTimer();
-	const results: WCSTTrialResult[] = [];
-	let currentRuleIndex = 0;
-	let consecutiveCorrect = 0;
-	let categoriesCompleted = 0;
-	let trialStartTime = 0;
-	let startedAt = '';
-	let destroyed = false;
+  const timer = new HighResTimer();
+  const results: WCSTTrialResult[] = [];
+  let currentRuleIndex = 0;
+  let consecutiveCorrect = 0;
+  let categoriesCompleted = 0;
+  let trialStartTime = 0;
+  let startedAt = '';
+  let destroyed = false;
 
-	const currentRule = $derived(config.ruleSequence[currentRuleIndex % 3]);
+  const currentRule = $derived(config.ruleSequence[currentRuleIndex % 3]);
 
-	const deck = generateDeck();
+  const deck = generateDeck();
 
-	function nextTrial() {
-		currentCard = deck[trialNumber];
-		trialStartTime = timer.now();
-		showFeedback = false;
-	}
+  function nextTrial() {
+    currentCard = deck[trialNumber];
+    trialStartTime = timer.now();
+    showFeedback = false;
+  }
 
-	async function handleCardClick(refIndex: number) {
-		if (!running || showFeedback || !currentCard || timer.paused) return;
+  async function handleCardClick(refIndex: number) {
+    if (!running || showFeedback || !currentCard || timer.paused) return;
 
-		const rt = timer.now() - trialStartTime;
-		const correct = isCorrectMatch(currentCard, refIndex, currentRule);
-		const matchedDimensions = getMatchedDimensions(currentCard, config.referenceCards[refIndex]);
+    const rt = timer.now() - trialStartTime;
+    const correct = isCorrectMatch(currentCard, refIndex, currentRule);
+    const matchedDimensions = getMatchedDimensions(currentCard, config.referenceCards[refIndex]);
 
-		results.push({
-			testCard: currentCard,
-			selectedRefIndex: refIndex,
-			currentRule,
-			matchedDimensions,
-			correct,
-			isPerseverative: false, // scored after the test (requires look-ahead for the sandwich rule)
-			trialNumber,
-			rt
-		});
+    results.push({
+      testCard: currentCard,
+      selectedRefIndex: refIndex,
+      currentRule,
+      matchedDimensions,
+      correct,
+      isPerseverative: false, // scored after the test (requires look-ahead for the sandwich rule)
+      trialNumber,
+      rt,
+    });
 
-		// Show feedback
-		feedbackCorrect = correct;
-		feedbackText = correct ? 'Richtig' : 'Falsch';
-		showFeedback = true;
+    // Show feedback
+    feedbackCorrect = correct;
+    feedbackText = correct ? i.tests.wcst.feedbackCorrect : i.tests.wcst.feedbackWrong;
+    showFeedback = true;
 
-		if (correct) {
-			consecutiveCorrect++;
-		} else {
-			consecutiveCorrect = 0;
-		}
+    if (correct) {
+      consecutiveCorrect++;
+    } else {
+      consecutiveCorrect = 0;
+    }
 
-		// Check category completion
-		if (consecutiveCorrect >= config.correctToSwitch) {
-			categoriesCompleted++;
-			consecutiveCorrect = 0;
-			currentRuleIndex++;
-		}
+    // Check category completion
+    if (consecutiveCorrect >= config.correctToSwitch) {
+      categoriesCompleted++;
+      consecutiveCorrect = 0;
+      currentRuleIndex++;
+    }
 
-		trialNumber++;
+    trialNumber++;
 
-		await timer.delay(config.feedbackDurationMs);
-		if (destroyed) return;
+    await timer.delay(config.feedbackDurationMs);
+    if (destroyed) return;
 
-		// Check end conditions
-		if (categoriesCompleted >= config.maxCategories || trialNumber >= config.maxTrials) {
-			finishTest();
-		} else {
-			nextTrial();
-		}
-	}
+    // Check end conditions
+    if (categoriesCompleted >= config.maxCategories || trialNumber >= config.maxTrials) {
+      finishTest();
+    } else {
+      nextTrial();
+    }
+  }
 
-	async function finishTest() {
-		running = false;
-		try {
-			summary = computeSummary(results);
-			const perseverative = scorePerseveration(results);
-			results.forEach((r, idx) => (r.isPerseverative = perseverative[idx]));
+  async function finishTest() {
+    running = false;
+    try {
+      summary = computeSummary(results);
+      const perseverative = scorePerseveration(results);
+      results.forEach((r, idx) => (r.isPerseverative = perseverative[idx]));
 
-			await saveRunToSession(
-				{
-					testId: config.testId,
-					startedAt,
-					completedAt: new Date().toISOString(),
-					durationMs: timer.now(),
-					config: { ...config, referenceCards: undefined },
-					summary
-				},
-				results.map((r, idx) => ({
-					trialNumber: idx,
-					phase: 'test',
-					stimulus: { testCard: r.testCard, currentRule: r.currentRule },
-					response: { selectedRefIndex: r.selectedRefIndex },
-					rt: r.rt,
-					correct: r.correct,
-					onsetTimestamp: 0,
-					responseTimestamp: r.rt,
-					customData: { isPerseverative: r.isPerseverative, matchedDimensions: r.matchedDimensions }
-				}))
-			);
-		} catch (e) {
-			console.error('Fehler beim Speichern:', e);
-		} finally {
-			testShell?.setPhase('completed');
-		}
-	}
+      await saveRunToSession(
+        {
+          testId: config.testId,
+          startedAt,
+          completedAt: new Date().toISOString(),
+          durationMs: timer.now(),
+          config: { ...config, referenceCards: undefined },
+          summary,
+        },
+        results.map((r, idx) => ({
+          trialNumber: idx,
+          phase: 'test',
+          stimulus: { testCard: r.testCard, currentRule: r.currentRule },
+          response: { selectedRefIndex: r.selectedRefIndex },
+          rt: r.rt,
+          correct: r.correct,
+          onsetTimestamp: 0,
+          responseTimestamp: r.rt,
+          customData: {
+            isPerseverative: r.isPerseverative,
+            matchedDimensions: r.matchedDimensions,
+          },
+        })),
+      );
+    } catch (e) {
+      console.error('Failed to save the test run:', e);
+    } finally {
+      testShell?.setPhase('completed');
+    }
+  }
 
-	function runTest() {
-		running = true;
-		startedAt = new Date().toISOString();
-		timer.reset();
-		nextTrial();
-	}
+  function runTest() {
+    running = true;
+    startedAt = new Date().toISOString();
+    timer.reset();
+    nextTrial();
+  }
 
-	function getResultMetrics() {
-		if (!summary) return [];
-		return [
-			{ label: 'Kategorien', value: `${summary.categoriesCompleted}/${config.maxCategories}`, highlight: true },
-			{ label: 'Perseverative Fehler', value: `${summary.perseverativeErrors} (${summary.totalTrials ? ((summary.perseverativeErrors / summary.totalTrials) * 100).toFixed(0) : 0} %)`, highlight: true },
-			{ label: 'Perseverative Antworten', value: summary.perseverativeResponses },
-			{ label: 'Failure to Maintain Set', value: summary.failureToMaintainSet },
-			{ label: 'Gesamtfehler', value: summary.totalErrors },
-			{ label: 'Nicht-perseverative Fehler', value: summary.nonPerseverativeErrors },
-			{ label: 'Konzeptuelles Niveau', value: summary.conceptualLevelResponses },
-			{ label: 'Trials bis 1. Kategorie', value: summary.trialsToFirstCategory },
-			{ label: 'Gesamttrials', value: summary.totalTrials }
-		];
-	}
-
-	onDestroy(() => {
-		running = false;
-		destroyed = true;
-	});
+  onDestroy(() => {
+    running = false;
+    destroyed = true;
+  });
 </script>
 
 <TestShell
-	bind:this={testShell}
-	testName={config.testName}
-	instructions={[...config.instructions]}
-	currentTrial={trialNumber}
-	totalTrials={config.maxTrials}
-	onStart={() => runTest()}
-	onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
+  bind:this={testShell}
+  testName={config.testName}
+  instructions={[...config.instructions]}
+  currentTrial={trialNumber}
+  totalTrials={config.maxTrials}
+  onStart={() => runTest()}
+  onPauseChange={(p) => (p ? timer.pause() : timer.resume())}
 >
-	{#snippet children({ phase })}
-		{#if phase === 'running'}
-			<div class="stimulus-area">
-				<!-- Reference cards -->
-				<div class="flex gap-1.5 sm:gap-4 mb-8 sm:mb-10 px-2">
-					{#each config.referenceCards as card, idx}
-						<button
-							class="w-[4.25rem] h-28 sm:w-24 sm:h-32 bg-surface rounded-lg border-2 border-slate-300 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:shadow-md transition-all {showFeedback ? 'pointer-events-none opacity-60' : 'cursor-pointer'}"
-							onclick={() => handleCardClick(idx)}
-							disabled={showFeedback}
-						>
-							{#each Array(card.count) as _, shapeIdx}
-								<svg viewBox="0 0 100 100" class="w-4 h-4 sm:w-5 sm:h-5">
-									<path d={config.shapePaths[card.shape]} style="fill: {config.colorHex[card.color]}" />
-								</svg>
-							{/each}
-						</button>
-					{/each}
-				</div>
+  {#snippet children({ phase })}
+    {#if phase === 'running'}
+      <div class="stimulus-area">
+        <!-- Reference cards -->
+        <div class="flex gap-1.5 sm:gap-4 mb-8 sm:mb-10 px-2">
+          {#each config.referenceCards as card, idx (idx)}
+            <button
+              class="w-[4.25rem] h-28 sm:w-24 sm:h-32 bg-surface rounded-lg border-2 border-slate-300 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:shadow-md transition-all {showFeedback
+                ? 'pointer-events-none opacity-60'
+                : 'cursor-pointer'}"
+              onclick={() => handleCardClick(idx)}
+              disabled={showFeedback}
+            >
+              {#each Array(card.count) as _, n (n)}
+                <svg viewBox="0 0 100 100" class="w-4 h-4 sm:w-5 sm:h-5">
+                  <path
+                    d={config.shapePaths[card.shape]}
+                    style="fill: {config.colorHex[card.color]}"
+                  />
+                </svg>
+              {/each}
+            </button>
+          {/each}
+        </div>
 
-				<!-- Feedback -->
-				{#if showFeedback}
-					<div class="mb-4 text-lg font-medium {feedbackCorrect ? 'text-green-600' : 'text-red-600'}">
-						{feedbackText}
-					</div>
-				{/if}
+        <!-- Feedback -->
+        {#if showFeedback}
+          <div
+            class="mb-4 text-lg font-medium {feedbackCorrect ? 'text-green-600' : 'text-red-600'}"
+          >
+            {feedbackText}
+          </div>
+        {/if}
 
-				<!-- Test card -->
-				{#if currentCard}
-					<div class="w-28 h-36 bg-surface rounded-lg border-2 border-slate-400 flex flex-col items-center justify-center gap-1 shadow-lg">
-						{#each Array(currentCard.count) as _}
-							<svg viewBox="0 0 100 100" class="w-6 h-6">
-								<path d={config.shapePaths[currentCard.shape]} style="fill: {config.colorHex[currentCard.color]}" />
-							</svg>
-						{/each}
-					</div>
-				{/if}
+        <!-- Test card -->
+        {#if currentCard}
+          <div
+            class="w-28 h-36 bg-surface rounded-lg border-2 border-slate-400 flex flex-col items-center justify-center gap-1 shadow-lg"
+          >
+            {#each Array(currentCard.count) as _, n (n)}
+              <svg viewBox="0 0 100 100" class="w-6 h-6">
+                <path
+                  d={config.shapePaths[currentCard.shape]}
+                  style="fill: {config.colorHex[currentCard.color]}"
+                />
+              </svg>
+            {/each}
+          </div>
+        {/if}
 
-				<div class="mt-6 text-sm text-slate-400">
-					Durchgang {Math.min(trialNumber + 1, config.maxTrials)} / {config.maxTrials}
-				</div>
-			</div>
-		{:else if phase === 'completed' && summary}
-			<ResultsCard
-				testName={config.testName}
-				metrics={getResultMetrics()}
-				onOverview={() => goto(`${base}/`)}
-				onNext={nextTest ? () => goto(nextTest.href) : undefined}
-			/>
-		{/if}
-	{/snippet}
+        <div class="mt-6 text-sm text-slate-400">
+          {i.tests.wcst.trialOf(Math.min(trialNumber + 1, config.maxTrials), config.maxTrials)}
+        </div>
+      </div>
+    {:else if phase === 'completed' && summary}
+      <ResultsCard
+        testName={config.testName}
+        {summary}
+        onOverview={() => goto(resolve('/'))}
+        onNext={nextTest ? () => goto(resolve(nextTest.path)) : undefined}
+      />
+    {/if}
+  {/snippet}
 </TestShell>

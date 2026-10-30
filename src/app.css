@@ -4,14 +4,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-	/* Card / panel background (white in light mode) */
-	--color-surface: #ffffff;
+  /* Card / panel background (white in light mode) */
+  --color-surface: #ffffff;
 
-	/* Stimulus colours (Stroop, WCST, Tower); dark mode uses lighter variants with equal salience */
-	--color-stim-rot: #dc2626;
-	--color-stim-blau: #2563eb;
-	--color-stim-gruen: #16a34a;
-	--color-stim-gelb: #ca8a04;
+  /* Stimulus colours (Stroop, WCST, Tower); dark mode uses lighter variants with equal salience */
+  --color-stim-rot: #dc2626;
+  --color-stim-blau: #2563eb;
+  --color-stim-gruen: #16a34a;
+  --color-stim-gelb: #ca8a04;
 }
 
 /*
@@ -19,108 +19,112 @@
  * automatically; tints used for backgrounds are replaced with dark counterparts.
  */
 .dark {
-	color-scheme: dark;
+  color-scheme: dark;
 
-	--color-surface: #0f172a;
+  --color-surface: #0f172a;
 
-	--color-slate-50: #020617;
-	--color-slate-100: #1e293b;
-	--color-slate-200: #263449;
-	--color-slate-300: #3b4a63;
-	--color-slate-400: #7c8aa0;
-	--color-slate-500: #94a3b8;
-	--color-slate-600: #cbd5e1;
-	--color-slate-700: #e2e8f0;
-	--color-slate-800: #f1f5f9;
-	--color-slate-900: #f8fafc;
+  --color-slate-50: #020617;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #263449;
+  --color-slate-300: #3b4a63;
+  --color-slate-400: #7c8aa0;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
 
-	--color-blue-50: #14213d;
-	--color-blue-100: #1c2f57;
-	--color-blue-200: #1e3a8a;
-	--color-blue-300: #2b4fa8;
-	--color-amber-50: #261b06;
-	--color-amber-100: #3a2a0a;
-	--color-amber-200: #5c4310;
-	--color-red-50: #2d1013;
-	--color-red-100: #431418;
-	--color-green-50: #0b2716;
-	--color-green-200: #14532d;
+  --color-blue-50: #14213d;
+  --color-blue-100: #1c2f57;
+  --color-blue-200: #1e3a8a;
+  --color-blue-300: #2b4fa8;
+  --color-amber-50: #261b06;
+  --color-amber-100: #3a2a0a;
+  --color-amber-200: #5c4310;
+  --color-red-50: #2d1013;
+  --color-red-100: #431418;
+  --color-green-50: #0b2716;
+  --color-green-200: #14532d;
 
-	--color-stim-rot: #f05252;
-	--color-stim-blau: #4f8ff7;
-	--color-stim-gruen: #22b357;
-	--color-stim-gelb: #e0a40c;
+  --color-stim-rot: #f05252;
+  --color-stim-blau: #4f8ff7;
+  --color-stim-gruen: #22b357;
+  --color-stim-gelb: #e0a40c;
 }
 
 /* Text on dark backgrounds needs lighter shades than the light-mode 600/700/800 tones */
 .dark .text-blue-600,
 .dark .text-blue-700 {
-	color: var(--color-blue-400);
+  color: var(--color-blue-400);
 }
 .dark .text-red-600 {
-	color: var(--color-red-400);
+  color: var(--color-red-400);
 }
 .dark .text-green-600 {
-	color: var(--color-green-400);
+  color: var(--color-green-400);
 }
 .dark .text-amber-600 {
-	color: var(--color-amber-400);
+  color: var(--color-amber-400);
 }
 .dark .text-amber-700,
 .dark .text-amber-800 {
-	color: var(--color-amber-300);
+  color: var(--color-amber-300);
 }
 
 html {
-	/* No double-tap zoom delay on buttons; no grey tap flash on mobile */
-	touch-action: manipulation;
-	-webkit-tap-highlight-color: transparent;
-	-webkit-text-size-adjust: 100%;
-	text-size-adjust: 100%;
+  /* No double-tap zoom delay on buttons; no grey tap flash on mobile */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-html, body {
-	height: 100%;
-	margin: 0;
-	background-color: var(--color-slate-50);
-	color: var(--color-slate-900);
-	font-family: system-ui, -apple-system, sans-serif;
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-900);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 /* Visible keyboard focus everywhere (mouse/touch focus stays unstyled) */
 :focus-visible {
-	outline: 2px solid var(--color-blue-500);
-	outline-offset: 2px;
-	border-radius: 0.375rem;
+  outline: 2px solid var(--color-blue-500);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		transition-duration: 0.01ms !important;
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-	}
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 .stimulus-area {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	min-height: 100vh;
-	min-height: 100dvh; /* excludes mobile browser chrome */
-	user-select: none;
-	-webkit-user-select: none;
-	-webkit-touch-callout: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh; /* excludes mobile browser chrome */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .fixation-cross {
-	font-size: 48px;
-	font-weight: 300;
-	color: var(--color-slate-400);
-	font-family: monospace;
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--color-slate-400);
+  font-family: monospace;
 }

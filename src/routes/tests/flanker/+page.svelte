@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Flanker from '$lib/tests/executive/flanker/Flanker.svelte';
+  import Flanker from '$lib/tests/executive/flanker/Flanker.svelte';
 </script>
 
 <Flanker />
