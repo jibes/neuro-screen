@@ -16,6 +16,8 @@ Deviations are listed below, each with a reason.
   and the component. `src/lib/core/`: timing, input, quality and environment checks.
   `src/lib/db/`: Dexie storage. `src/lib/results/`: summary formatting. `src/lib/i18n/`: catalogues.
 - `src/routes/`: pages. `e2e/`: Playwright, served from `build/` by `e2e/serve.mjs`.
+- `android/`: Capacitor shell (generated, then edited: version, signing, icons). `tools/android-*`:
+  version scheme and emulator smoke test used by `.github/workflows/android.yml`.
 - Keep each file under 800 lines; split before adding to it.
 
 ## Invariants
@@ -32,6 +34,21 @@ Deviations are listed below, each with a reason.
 - Scoring changes need a test in `tests/` and an update of the methods text.
 - The pre-paint theme script in `src/app.html` duplicates `src/lib/theme.svelte.ts`; keep them in
   sync. Its CSP hash is computed in `svelte.config.js`, so keep it the only `<script>` in `app.html`.
+
+## Android
+
+- Same web sources, built as a pure SPA (`npm run build:native`, `NATIVE=1`): Capacitor serves
+  `index.html` for every path, so nothing is prerendered and there is no CSP (the Capacitor
+  bridge is injected as inline script). `npm run android:sync` builds and copies it into the shell;
+  the copied assets are gitignored.
+- Browser-only code (service worker, install prompt) checks `isNative` from `src/lib/native.ts`;
+  native-only calls go into that module.
+- `package.json` `version` is the app version. A push to main that touches the app releases the
+  next free version (`tools/android-version.mjs`) when the `ANDROID_KEYSTORE_BASE64`,
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` secrets and the
+  `ANDROID_CERT_SHA256` variable are set; otherwise it builds a debug-signed APK only.
+- Android System WebView often has no usable `speechSynthesis`: Digit Span and the word list fall back to
+  visual presentation (stored with the run).
 
 ## Deviations from the standard
 

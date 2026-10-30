@@ -17,6 +17,8 @@ const build = { build: gitSha(), time: new Date().toISOString() };
 /** Absolute app base for the service worker URL and scope (Kit sets Vite's base to './') */
 const rawBase = process.env.VITE_BASE ?? '/';
 const appBase = rawBase === './' ? '/' : rawBase.replace(/\/?$/, '/');
+/** Android build: SPA shell in index.html (see svelte.config.js); no service worker is registered */
+const fallback = process.env.NATIVE === '1' ? 'index.html' : '404.html';
 
 /** Writes version.json ({ build, time }) next to the app, read by the update prompt and Settings */
 const versionJson: Plugin = {
@@ -43,7 +45,7 @@ export default defineConfig({
       injectRegister: false,
       // static/manifest.webmanifest is linked from app.html
       manifest: false,
-      kit: { base: appBase, adapterFallback: '404.html', spa: true, includeVersionFile: true },
+      kit: { base: appBase, adapterFallback: fallback, spa: true, includeVersionFile: true },
       workbox: {
         clientsClaim: true,
         // Navigations are served by the precached SPA fallback (404.html); ssr is off, so it

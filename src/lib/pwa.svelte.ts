@@ -1,4 +1,5 @@
 /** Install support: captures the browser's install prompt so the app can offer its own button. */
+import { isNative } from './native.js';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -12,6 +13,7 @@ let isIos = $state(false);
 /** Call once on app start (layout onMount) */
 export function initPwa(): void {
   installed =
+    isNative ||
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true;
   const ua = navigator.userAgent;

@@ -28,7 +28,7 @@ createServer((req, res) => {
   if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html');
   if (!existsSync(file) && existsSync(`${file}.html`)) file = `${file}.html`;
   const found = existsSync(file);
-  if (!found) file = join(root, '404.html');
+  if (!found) file = join(root, process.env.FALLBACK ?? '404.html');
   res.writeHead(found ? 200 : 404, {
     'content-type': types[extname(file)] ?? 'application/octet-stream',
   });

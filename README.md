@@ -106,6 +106,18 @@ update banner instead of reloading mid-test.
 
 ---
 
+## Android
+
+The Android app wraps the same web build with [Capacitor](https://capacitorjs.com/)
+(`android/`). `npm run apk` builds a debug APK locally (needs the Android SDK and JDK 21).
+`.github/workflows/android.yml` builds, signs and smoke-tests it in an emulator on every pull
+request and push to main, and publishes a GitHub release when the version in `package.json` has no
+tag yet. Install and update with [Obtainium](https://obtainium.imranr.dev/) by adding
+`https://github.com/jibes/neuro-screen`. The signing certificate SHA-256 is printed in each release.
+Where the Android WebView offers no speech synthesis, spoken stimuli are shown visually.
+
+---
+
 ## Privacy
 
 Nothing leaves the device. Sessions, trial data and settings stay in the browser (IndexedDB

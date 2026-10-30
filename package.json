@@ -1,7 +1,7 @@
 {
   "name": "neuro-screen",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "license": "GPL-3.0-or-later",
   "engines": {
@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:native": "NATIVE=1 vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
@@ -19,9 +20,13 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
+    "android:sync": "npm run build:native && cap sync android",
+    "android:open": "cap open android",
+    "apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.6.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@sveltejs/adapter-static": "^3.0.10",
@@ -46,6 +51,8 @@
     "vitest": "^5.0.5"
   },
   "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0",
     "dexie": "^4.3.0"
   }
 }

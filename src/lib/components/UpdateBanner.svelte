@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { t } from '$lib/i18n/index.js';
+  import { isNative } from '$lib/native.js';
 
   const i = t();
   let needRefresh = $state(false);
   let updateSW: ((reload?: boolean) => Promise<void>) | null = null;
 
   onMount(async () => {
-    if (!('serviceWorker' in navigator)) return;
+    // The Android app ships its files in the APK and updates through releases
+    if (isNative || !('serviceWorker' in navigator)) return;
     // Workbox prompt mode: a new version waits until the user accepts it
     const { registerSW } = await import('virtual:pwa-register');
     updateSW = registerSW({

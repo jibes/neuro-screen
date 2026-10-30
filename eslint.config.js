@@ -13,6 +13,8 @@ export default ts.config(
       'coverage/',
       'playwright-report/',
       'test-results/',
+      'android/',
+      'smoke-out/',
     ],
   },
   js.configs.recommended,

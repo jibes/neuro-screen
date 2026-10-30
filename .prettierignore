@@ -7,3 +7,5 @@ test-results
 .svelte-kit
 package-lock.json
 static/icons
+android
+smoke-out

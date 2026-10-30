@@ -1,0 +1,8 @@
+{
+  "appId": "ch.brunodev.neuroscreen",
+  "appName": "NeuroScreen",
+  "webDir": "build",
+  "android": {
+    "backgroundColor": "#f8fafc"
+  }
+}

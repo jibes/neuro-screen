@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NeuroScreen</string>
+    <string name="title_activity_main">NeuroScreen</string>
+    <string name="package_name">ch.brunodev.neuroscreen</string>
+    <string name="custom_url_scheme">ch.brunodev.neuroscreen</string>
+</resources>

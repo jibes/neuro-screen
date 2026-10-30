@@ -1,8 +1,27 @@
 name: Deploy to GitHub Pages
 
+# Web app → GitHub Pages. The Android app has its own path: android.yml (a version bump in
+# package.json releases the APK without redeploying the web).
 on:
   push:
     branches: [main]
+    paths:
+      - src/**
+      - static/**
+      - e2e/**
+      - tests/**
+      - svelte.config.js
+      - vite.config.ts
+      - vitest.config.ts
+      - playwright.config.ts
+      - tsconfig.json
+      - eslint.config.js
+      - .prettierrc
+      - .prettierignore
+      - .nvmrc
+      - package-lock.json
+      - .github/workflows/ci.yml
+      - .github/workflows/deploy.yml
   workflow_dispatch:
 
 permissions:
